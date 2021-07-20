@@ -53,13 +53,51 @@ public class CalendarView implements ChangeListener{
             yearLabel.setText(Integer.toString(c.getYear()));
           }
         });
-
         titlePanel.add(monthLabel);
         titlePanel.add(yearLabel);
         titlePanel.add(btnPrevMonth); 
         titlePanel.add(btnNextMonth);  
         titlePanel.add(btnToday);
-      
+
+      JPanel calendarPanel=new JPanel();
+      calendarPanel.setLayout(new GridLayout(6,7));
+      calendarPanel.setBorder(new EmptyBorder(BASE_SPACE / 2, BASE_SPACE, BASE_SPACE, BASE_SPACE));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
       
     leftPanel.add(titlePanel); 
     leftPanel.add(calendarPanel); 
