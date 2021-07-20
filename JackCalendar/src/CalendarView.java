@@ -2,6 +2,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.time.LocalDate;
 
 import javax.swing.event.*;
@@ -31,6 +32,28 @@ public class CalendarView implements ChangeListener{
         JButton btnPrevMonth=new JButton("<"); btnPrevMonth.setPreferredSize(new Dimension(BTN_SIZE, BTN_SIZE));
         JButton btnNextMonth=new JButton(">"); btnNextMonth.setPreferredSize(new Dimension(BTN_SIZE, BTN_SIZE));
         JButton btnToday = new JButton("Today");
+        btnPrevMonth.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+            c = c.minusMonths(1);
+            monthLabel.setText(getMonthAbbreviation(c));
+            yearLabel.setText(Integer.toString(c.getYear()));
+          }
+        });
+        btnNextMonth.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+            c = c.plusMonths(1);
+            monthLabel.setText(getMonthAbbreviation(c));
+            yearLabel.setText(Integer.toString(c.getYear()));
+          }
+        });
+        btnToday.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e) {
+            c = LocalDate.now();
+            monthLabel.setText(getMonthAbbreviation(c));
+            yearLabel.setText(Integer.toString(c.getYear()));
+          }
+        });
+
         titlePanel.add(monthLabel);
         titlePanel.add(yearLabel);
         titlePanel.add(btnPrevMonth); 
