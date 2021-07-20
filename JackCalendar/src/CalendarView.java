@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import java.awt.*;
+import java.time.LocalDate;
+
 import javax.swing.event.*;
 public class CalendarView implements ChangeListener{
   final int WINDOW_WIDTH = 800;
@@ -22,11 +24,16 @@ public class CalendarView implements ChangeListener{
       JPanel titlePanel=new JPanel();
       titlePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
       titlePanel.setBorder(new EmptyBorder(BASE_SPACE /  2, BASE_SPACE, BASE_SPACE /  2, BASE_SPACE));
-        JLabel monthLabel = new JLabel("July 2021");
+        JLabel monthLabel = new JLabel("July");
+        JLabel yearLabel = new JLabel("2021");
+        JLabel emptyLabel = new JLabel("");
         monthLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        yearLabel.setBorder(new EmptyBorder(0, 10, 0, BASE_SPACE));
+        emptyLabel.setBorder(new EmptyBorder(0, 0, 0, BASE_SPACE * 3));
         JButton btnPrevMonth=new JButton("<"); btnPrevMonth.setPreferredSize(new Dimension(BTN_SIZE, BTN_SIZE));
         JButton btnNextMonth=new JButton(">"); btnNextMonth.setPreferredSize(new Dimension(BTN_SIZE, BTN_SIZE));
         JButton btnToday = new JButton("Today");
+<<<<<<< HEAD
         titlePanel.add(monthLabel);titlePanel.add(btnPrevMonth); titlePanel.add(btnNextMonth);  titlePanel.add(btnToday);
       JPanel subPanel2=new JPanel();
       subPanel2.setLayout(new GridLayout(6,7));
@@ -66,6 +73,53 @@ public class CalendarView implements ChangeListener{
       subPanel2.add(new JButton("btn"));
       subPanel2.add(new JButton("btn"));
       subPanel2.add(new JButton("btn"));
+=======
+        titlePanel.add(monthLabel);
+        titlePanel.add(yearLabel);
+        titlePanel.add(btnPrevMonth); 
+        titlePanel.add(btnNextMonth); 
+        titlePanel.add(emptyLabel); 
+        titlePanel.add(btnToday);
+      JPanel calendarPanel=new JPanel();
+      calendarPanel.setLayout(new GridLayout(6,7));
+      calendarPanel.setBorder(new EmptyBorder(BASE_SPACE / 2, BASE_SPACE, BASE_SPACE, BASE_SPACE));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+      calendarPanel.add(new JButton("btn"));
+>>>>>>> 6856e3a (Refactored the GUI components)
       
       
     leftPanel.add(titlePanel); 
