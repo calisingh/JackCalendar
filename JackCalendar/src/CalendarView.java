@@ -33,47 +33,6 @@ public class CalendarView implements ChangeListener{
         JButton btnPrevMonth=new JButton("<"); btnPrevMonth.setPreferredSize(new Dimension(BTN_SIZE, BTN_SIZE));
         JButton btnNextMonth=new JButton(">"); btnNextMonth.setPreferredSize(new Dimension(BTN_SIZE, BTN_SIZE));
         JButton btnToday = new JButton("Today");
-<<<<<<< HEAD
-        titlePanel.add(monthLabel);titlePanel.add(btnPrevMonth); titlePanel.add(btnNextMonth);  titlePanel.add(btnToday);
-      JPanel subPanel2=new JPanel();
-      subPanel2.setLayout(new GridLayout(6,7));
-      subPanel2.setBorder(new EmptyBorder(BASE_SPACE / 2, BASE_SPACE, BASE_SPACE, BASE_SPACE));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-      subPanel2.add(new JButton("btn"));
-=======
         titlePanel.add(monthLabel);
         titlePanel.add(yearLabel);
         titlePanel.add(btnPrevMonth); 
@@ -119,11 +78,10 @@ public class CalendarView implements ChangeListener{
       calendarPanel.add(new JButton("btn"));
       calendarPanel.add(new JButton("btn"));
       calendarPanel.add(new JButton("btn"));
->>>>>>> 6856e3a (Refactored the GUI components)
       
       
     leftPanel.add(titlePanel); 
-    leftPanel.add(subPanel2); 
+    leftPanel.add(calendarPanel); 
 
     JPanel rightPanel=new JPanel();  
     rightPanel.setBounds(PANEL_WIDTH + 2 * BASE_SPACE,BASE_SPACE,PANEL_WIDTH,PANEL_HEIGHT);    
