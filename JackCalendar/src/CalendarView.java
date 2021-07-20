@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import java.awt.*;
+import java.time.LocalDate;
+
 import javax.swing.event.*;
 public class CalendarView implements ChangeListener{
   final int WINDOW_WIDTH = 800;
@@ -11,6 +13,7 @@ public class CalendarView implements ChangeListener{
   final int PANEL_HEIGHT = WINDOW_HEIGHT - 2 * BASE_SPACE;
   final int BTN_SIZE = 25;
 
+  LocalDate c = LocalDate.now();
   /* Constructor */
   public CalendarView() 
   {
@@ -20,14 +23,19 @@ public class CalendarView implements ChangeListener{
     leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
     leftPanel.setBounds(BASE_SPACE,BASE_SPACE,PANEL_WIDTH,PANEL_HEIGHT);
       JPanel titlePanel=new JPanel();
-      titlePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+      titlePanel.setLayout(new GridLayout());
       titlePanel.setBorder(new EmptyBorder(BASE_SPACE /  2, BASE_SPACE, BASE_SPACE /  2, BASE_SPACE));
-        JLabel monthLabel = new JLabel("July 2021");
+        JLabel monthLabel = new JLabel(getMonthAbbreviation(c));
         monthLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        JLabel yearLabel = new JLabel(Integer.toString(c.getYear()));
         JButton btnPrevMonth=new JButton("<"); btnPrevMonth.setPreferredSize(new Dimension(BTN_SIZE, BTN_SIZE));
         JButton btnNextMonth=new JButton(">"); btnNextMonth.setPreferredSize(new Dimension(BTN_SIZE, BTN_SIZE));
         JButton btnToday = new JButton("Today");
-        titlePanel.add(monthLabel);titlePanel.add(btnPrevMonth); titlePanel.add(btnNextMonth);  titlePanel.add(btnToday);
+        titlePanel.add(monthLabel);
+        titlePanel.add(yearLabel);
+        titlePanel.add(btnPrevMonth); 
+        titlePanel.add(btnNextMonth);  
+        titlePanel.add(btnToday);
       JPanel subPanel2=new JPanel();
       subPanel2.setLayout(new GridLayout(6,7));
       subPanel2.setBorder(new EmptyBorder(BASE_SPACE / 2, BASE_SPACE, BASE_SPACE, BASE_SPACE));
@@ -97,6 +105,26 @@ public class CalendarView implements ChangeListener{
     f.setSize(WINDOW_WIDTH, WINDOW_HEIGHT + 28);    
     f.setLayout(null);    
     f.setVisible(true);
+  }
+
+  /**
+   * January	Jan.
+   * February	Feb.
+   * March	Mar.
+   * April	Apr.
+   * May	May
+   * June	Jun.
+   * July	Jul.
+   * August	Aug.
+   * September	Sep. or Sept.
+   * October	Oct.
+   * December	Dec.
+   * November	Nov.
+   * @param date Local Date
+   * @return String of Month Abbreviations
+   */
+  public String getMonthAbbreviation(LocalDate date) { 
+    return date.getMonth().toString().substring(0, 3);
   }
 
   @Override
