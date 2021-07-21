@@ -7,14 +7,14 @@ public class CalendarModel{
   /* Constructor */
   public CalendarModel() 
   {
-    myCalendar = new MyCalendar();
-    myCalendar.addEvent(new Event("Title", "TR 10:30 11:45 1/28/21 5/13/21"));
+    // myCalendar = new MyCalendar();
+    // myCalendar.addEvent(new Event("Title", "2014;1;2;MWF;17;18;"));
   }
 
   
-  public MyCalendar getCalendar() {
-    return myCalendar;
-  }
+  // public MyCalendar getCalendar() {
+  //   return myCalendar;
+  // }
 
   /* attach ChangeListener */
   public void attach(ChangeListener c)
@@ -22,7 +22,7 @@ public class CalendarModel{
     changeListeners.add(c);
   }
 
-  private MyCalendar myCalendar;
+  // private MyCalendar myCalendar;
   private ArrayList<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
 
 }
