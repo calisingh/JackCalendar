@@ -1,3 +1,4 @@
+
 /**
  * TimeInterval.java
  * 
@@ -24,10 +25,10 @@ public class TimeInterval {
    * ex. convertToMinute(1:30) => returns 90
    */
   private int convertToMinute(String timeStr) {
-    int yearInMinute = date.getYear()                           * 60 * 24 * 365;
-    int monthInMinute = date.getMonthValue()                    * 60 * 24 * date.getMonth().length(date.isLeapYear());
-    int dayInMinute = date.getDayOfMonth()                      * 60 * 24;
-    int hourInMinute = Integer.parseInt(timeStr.split(":")[0])  * 60;
+    int yearInMinute = date.getYear() * 60 * 24 * 365;
+    int monthInMinute = date.getMonthValue() * 60 * 24 * date.getMonth().length(date.isLeapYear());
+    int dayInMinute = date.getDayOfMonth() * 60 * 24;
+    int hourInMinute = Integer.parseInt(timeStr.split(":")[0]) * 60;
     int minute = Integer.parseInt(timeStr.split(":")[1]);
 
     return yearInMinute + monthInMinute + dayInMinute + hourInMinute + minute;
