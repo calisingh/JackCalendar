@@ -12,20 +12,34 @@ import java.io.*;
 import java.time.LocalDate;
 
 public class MyCalendar {
-  private final List<Event> eventList = new ArrayList<Event>();
+  private final ArrayList<Event> eventList;
 
+  public MyCalendar() {
+    eventList = new ArrayList<Event>();
+  }
+
+  public String getEventInfo(LocalDate date) {
+    for(Event event : eventList) {
+      for(TimeInterval t : event.timeIntervalList) {
+        if(t.date.equals(date))
+          return event.title;
+      }
+    }
+    return "There is no event on thie date";
+  }
   /**
    * add Event passed by parameter to the eventList
    */
   public void addEvent(Event newEvent) {
+    eventList.add(newEvent);
+    System.out.println("Added.");
     // when time input is valid and no time conflict
-    if(!isTimeConflict(newEvent)){
-      if(newEvent.isValid)
-        eventList.add(newEvent);
-      else         
-        System.out.println("Error: Failed to add '" + newEvent.title + "' - invalid time input\n");
-
-    }
+    // if(!isTimeConflict(newEvent)){
+    //   if(newEvent.isValid)
+    //     eventList.add(newEvent);
+    //   else         
+    //     System.out.println("Error: Failed to add '" + newEvent.title + "' - invalid time input\n");
+    // }
     // time input is invalid
   }
 

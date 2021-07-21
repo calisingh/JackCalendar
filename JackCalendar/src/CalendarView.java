@@ -8,8 +8,10 @@ import java.time.LocalDate;
 import javax.swing.event.*;
 public class CalendarView implements ChangeListener{
   /* Constructor */
-  public CalendarView() 
+  public CalendarView(CalendarModel m) 
   {
+    model = m;
+    myCalendar = m.getCalendar();
     currentDate = LocalDate.now();
     JFrame f= new JFrame("JACK CALENDAR");    
 
@@ -25,6 +27,7 @@ public class CalendarView implements ChangeListener{
     titlePanel.setBorder(new EmptyBorder(BASE_SPACE /  2, BASE_SPACE, BASE_SPACE /  2, BASE_SPACE));
     JPanel calendarPanel=new JPanel();
     
+    /* Left Panel Component */
     JLabel monthLabel = new JLabel(getMonthAbbreviation(currentDate), SwingConstants.CENTER);
     monthLabel.setFont(new Font("Arial", Font.BOLD, 20));
     JLabel yearLabel = new JLabel(Integer.toString(currentDate.getYear()));
@@ -32,47 +35,7 @@ public class CalendarView implements ChangeListener{
     JButton btnNextMonth=new JButton(">"); btnNextMonth.setPreferredSize(new Dimension(BTN_SIZE, BTN_SIZE));
     JButton btnToday = new JButton("Today");
 
-    btnPrevMonth.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        currentDate = currentDate.minusMonths(1);
-        monthLabel.setText(getMonthAbbreviation(currentDate));
-        yearLabel.setText(Integer.toString(currentDate.getYear()));
-        calendarPanel.removeAll();
-        calendarDateBtnHandler(calendarPanel, currentDate);
-      }
-    });
-    btnNextMonth.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        currentDate = currentDate.plusMonths(1);
-        monthLabel.setText(getMonthAbbreviation(currentDate));
-        yearLabel.setText(Integer.toString(currentDate.getYear()));
-        calendarPanel.removeAll();
-        calendarDateBtnHandler(calendarPanel, currentDate);
-      }
-    });
-    btnToday.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        currentDate = LocalDate.now();
-        monthLabel.setText(getMonthAbbreviation(currentDate));
-        yearLabel.setText(Integer.toString(currentDate.getYear()));
-        System.out.println("current date is: " + currentDate.toString());
-        calendarPanel.removeAll();
-        calendarDateBtnHandler(calendarPanel, currentDate);
-      }
-    });
-    
-    titlePanel.add(monthLabel);
-    titlePanel.add(yearLabel);
-    titlePanel.add(btnPrevMonth); 
-    titlePanel.add(btnNextMonth);  
-    titlePanel.add(btnToday);
-
-    calendarDateBtnHandler(calendarPanel, currentDate);
-      
-    leftPanel.add(titlePanel); 
-    leftPanel.add(calendarPanel); 
-
-    /* Right Panel */
+    /* Right Panel Component */
     JButton btnD = new JButton("Day");
     JButton btnW = new JButton("Week");
     JButton btnM = new JButton("Month");
@@ -82,6 +45,58 @@ public class CalendarView implements ChangeListener{
     JButton btnEdit = new JButton("Edit");
     JButton btnDelete = new JButton("Delete");
     JButton btnLoadFile = new JButton("File");
+
+    /* Initialize Calendar */
+    calendarDateBtnHandler(calendarPanel, currentDate, content);
+
+    content.setText("Welcome to JACK Calendar!");
+    /* ActionListeners */
+    btnPrevMonth.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        // update current date
+        currentDate = currentDate.minusMonths(1);
+        // update title
+        monthLabel.setText(getMonthAbbreviation(currentDate));
+        yearLabel.setText(Integer.toString(currentDate.getYear()));
+        // update monthly calendar
+        calendarPanel.removeAll();
+        calendarDateBtnHandler(calendarPanel, currentDate, content);
+      }
+    });
+    btnNextMonth.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        // update current date
+        currentDate = currentDate.plusMonths(1);
+        // update title
+        monthLabel.setText(getMonthAbbreviation(currentDate));
+        yearLabel.setText(Integer.toString(currentDate.getYear()));
+        // update monthly calendar
+        calendarPanel.removeAll();
+        calendarDateBtnHandler(calendarPanel, currentDate, content);
+      }
+    });
+    btnToday.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        // update current date
+        currentDate = LocalDate.now();
+        // update title
+        monthLabel.setText(getMonthAbbreviation(currentDate));
+        yearLabel.setText(Integer.toString(currentDate.getYear()));
+        // update monthly calendar
+        calendarPanel.removeAll();
+        calendarDateBtnHandler(calendarPanel, currentDate, content);
+      }
+    });
+
+    /* Left Panel Component*/
+    titlePanel.add(monthLabel);
+    titlePanel.add(yearLabel);
+    titlePanel.add(btnPrevMonth); 
+    titlePanel.add(btnNextMonth);  
+    titlePanel.add(btnToday);
+    /* Right Panel Component */
+    leftPanel.add(titlePanel); 
+    leftPanel.add(calendarPanel); 
     rightPanel.add(btnD);
     rightPanel.add(btnW);
     rightPanel.add(btnM);
@@ -91,8 +106,6 @@ public class CalendarView implements ChangeListener{
     rightPanel.add(btnEdit);
     rightPanel.add(btnDelete);
     rightPanel.add(btnLoadFile);
-    
-    
     
     f.add(leftPanel); f.add(rightPanel);  
     
@@ -121,7 +134,7 @@ public class CalendarView implements ChangeListener{
     return date.getMonth().toString().substring(0, 3);
   }
 
-  public void calendarDateBtnHandler(JPanel calendarPanel, LocalDate c) {
+  public void calendarDateBtnHandler(JPanel calendarPanel, LocalDate c, JTextArea content) {
     int totalDaysOfMonth = c.getMonth().length(c.isLeapYear());
 		int offset = 0;
 		String firstDayOfMonth = LocalDate.of(c.getYear(), c.getMonth(), 1).getDayOfWeek().name();
@@ -141,7 +154,6 @@ public class CalendarView implements ChangeListener{
     JLabel sunLabel = new JLabel("S", SwingConstants.CENTER); 
     sunLabel.setForeground(Color.red);
     sunLabel.setFont(new Font("Arial", Font.BOLD, 14));
-    //sunLabel.setFont(new Font(Font.BOLD))
     JLabel monLabel = new JLabel("M", SwingConstants.CENTER);
     monLabel.setFont(new Font("Arial", Font.BOLD, 14));
     JLabel tueLabel = new JLabel("T", SwingConstants.CENTER);
@@ -179,6 +191,10 @@ public class CalendarView implements ChangeListener{
           // Update current date
           currentDate = LocalDate.of(c.getYear(), c.getMonth(), date);
           System.out.println("current date is: " + currentDate.toString());
+
+          // update content of the date
+          //content.removeAll();
+          content.setText(myCalendar.getEventInfo(currentDate));
         }
       });
     }
@@ -207,5 +223,7 @@ public class CalendarView implements ChangeListener{
   final int CALENDAR_ROW = 6;
   final int CALENDAR_COL = 7;
 
-  LocalDate currentDate;
+  private LocalDate currentDate;
+  private MyCalendar myCalendar;
+  private CalendarModel model;
 }
