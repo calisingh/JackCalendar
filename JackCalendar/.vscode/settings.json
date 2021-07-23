@@ -1,5 +1,5 @@
 {
-  "java.project.sourcePaths": ["src/Kun's Code"],
+  "java.project.sourcePaths": ["src/Kun's Code", "src"],
   "java.project.referencedLibraries": [
     "lib/**/*.jar",
     "/Library/Java/org_junit_platform_junit-platform-console-standalone_1.6.0_junit-platform-console-standalone-1.6.0.jar",

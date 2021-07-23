@@ -109,28 +109,18 @@ public class View implements ChangeListener {
     });
 
     prevMonthBtn.addActionListener(e -> {
-        moveMonthHandler(-1);
+      currentDate = currentDate.minusMonths(1);
+      moveMonthHandler(currentDate);
     });
 
     nextMonthBtn.addActionListener(e -> {
-      moveMonthHandler(1);
+      currentDate = currentDate.plusMonths(1);
+      moveMonthHandler(currentDate);
     });
 
     todayBtn.addActionListener(e -> {
-        // update current date
         currentDate = LocalDate.now();
-        // update title
-        monthName.setText(getMonthAbbreviation(currentDate));
-        yearName.setText(Integer.toString(currentDate.getYear()));
-        // update monthly calendar
-        monthView.removeAll();
-        showMonthlyCalendar(currentDate);
-        model.updateListeners(this.getCalendar(model));
-        /* Highlight the date*/
-        highlight(currentDate, lastHighlight);
-        lastHighlight = currentDate.getDayOfMonth();
-
-        System.out.println(currentDate.toString());
+        moveMonthHandler(currentDate);
     });
 
     quitBtn.addActionListener(e -> {
@@ -197,12 +187,10 @@ public class View implements ChangeListener {
     highlight(currentDate, lastHighlight);
     lastHighlight = currentDate.getDayOfMonth();
 
-    System.out.println(currentDate.toString());
+    currentDateToString(currentDate);
   }
 
-  private void moveMonthHandler(int i) {
-    // update current date
-    currentDate = currentDate.plusMonths(i);
+  private void moveMonthHandler(LocalDate currentDate) {
     // update title
     monthName.setText(getMonthAbbreviation(currentDate));
     yearName.setText(Integer.toString(currentDate.getYear()));
@@ -215,7 +203,7 @@ public class View implements ChangeListener {
     highlight(currentDate, lastHighlight);
     lastHighlight = currentDate.getDayOfMonth();
 
-    System.out.println(currentDate.toString());
+    currentDateToString(currentDate);
   }
 
 
@@ -322,6 +310,10 @@ public class View implements ChangeListener {
     return date.getMonth().toString().substring(0, 3);
   }
 
+  public void currentDateToString(LocalDate c){
+    System.out.println("Current Date: " + c.toString());
+  }
+
   
   public void showMonthlyCalendar(LocalDate c) {
     int totalDaysOfMonth = c.getMonth().length(c.isLeapYear());
@@ -390,7 +382,7 @@ public class View implements ChangeListener {
           highlight(currentDate, lastHighlight);
           lastHighlight = date;
 
-          System.out.println(currentDate.toString());
+          currentDateToString(currentDate);
       });
       daysButtons.put(i, dateBtn);
     }
