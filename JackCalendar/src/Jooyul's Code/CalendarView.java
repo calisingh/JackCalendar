@@ -8,34 +8,37 @@ import java.time.LocalDate;
 
 import javax.swing.event.*;
 
+
+/**
+ * View and Controller for Calendar
+ * 
+ * @author Carissa, Jooyul, Kunwarpreet
+ */
 public class CalendarView implements ChangeListener {
-  /**
-   * View and Controller for Calendar
-   * 
-   * @author Carissa, Jooyul, Kunwarpreet
-   */
-  public class CalendarView implements ChangeListener {
 
-    final int WINDOW_WIDTH = 800;
-    final int WINDOW_HEIGHT = 300;
-    final int BASE_SPACE = 20;
-    final int PANEL_WIDTH = (WINDOW_WIDTH - 3 * BASE_SPACE) / 2;
-    final int PANEL_HEIGHT = WINDOW_HEIGHT - 2 * BASE_SPACE;
-    final int BTN_SIZE = 25;
-    final int CALENDAR_ROW = 6;
-    final int CALENDAR_COL = 7;
+  final int WINDOW_WIDTH = 800;
+  final int WINDOW_HEIGHT = 300;
+  final int BASE_SPACE = 20;
+  final int PANEL_WIDTH = (WINDOW_WIDTH - 3 * BASE_SPACE) / 2;
+  final int PANEL_HEIGHT = WINDOW_HEIGHT - 2 * BASE_SPACE;
+  final int BTN_SIZE = 25;
+  final int CALENDAR_ROW = 6;
+  final int CALENDAR_COL = 7;
 
-    private JFrame frame = new JFrame("JACK CALENDAR");
-    private LocalDate currentDate;
-    private CalendarModel model;
-    // private MyCalendar myCalendar;
+  LocalDate current = LocalDate.now();
+  private JFrame frame = new JFrame("JACK CALENDAR");
+  private LocalDate currentDate;
+  private CalendarModel model;
 
+    
     /* Constructor */
     public CalendarView(CalendarModel m) {
+
+    // private MyCalendar myCalendar;
+
       model = m;
       // myCalendar = m.getCalendar();
       currentDate = LocalDate.now();
-      JFrame f = new JFrame("JACK CALENDAR");
 
       JPanel leftPanel = new JPanel();
       leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
@@ -161,15 +164,6 @@ public class CalendarView implements ChangeListener {
       f.setVisible(true);
     }
 
-    /**
-     * January Jan. February Feb. March Mar. April Apr. May May June Jun. July Jul.
-     * August Aug. September Sep. or Sept. October Oct. December Dec. November Nov.
-     * 
-     * @param date Local Date
-     * @return String of Month Abbreviations
-     */
-    public String getMonthAbbreviation(LocalDate date) {
-      return date.getMonth().toString().substring(0, 3);
 
       frame.add(leftPanel);
       frame.add(rightPanel);
@@ -251,7 +245,7 @@ public class CalendarView implements ChangeListener {
 
             // update content of the date
             // content.removeAll();
-            content.setText(myCalendar.getEventInfo(currentDate));
+            // content.setText(myCalendar.getEventInfo(currentDate));
 
             // content.setText(myCalendar.getEventInfo(currentDate));
           }
@@ -266,21 +260,6 @@ public class CalendarView implements ChangeListener {
         calendarPanel.add(dateBtn);
       }
     }
-
-    @Override
-    public void stateChanged(ChangeEvent e) {
-      // TODO Auto-generated method stub
-
-    }
-
-    final int WINDOW_WIDTH = 800;
-    final int WINDOW_HEIGHT = 300;
-    final int BASE_SPACE = 20;
-    final int PANEL_WIDTH = (WINDOW_WIDTH - 3 * BASE_SPACE) / 2;
-    final int PANEL_HEIGHT = WINDOW_HEIGHT - 2 * BASE_SPACE;
-    final int BTN_SIZE = 25;
-    final int CALENDAR_ROW = 6;
-    final int CALENDAR_COL = 7;=======
 
   private void createEventDialog() {
 		JDialog eventDialog = new JDialog();
@@ -349,48 +328,30 @@ public class CalendarView implements ChangeListener {
     eventDialog.setLayout(new GridLayout(6, 2));
 		eventDialog.pack();
 		eventDialog.setVisible(true);
+  }
 
-    public void loadFileDialog() {
-      JFrame frame = new JFrame("File Browser");
+  public void loadFileDialog() {
+    JFrame frame = new JFrame("File Browser");
 
-      JFileChooser fileChooser = new JFileChooser(".");
-      JButton btnClose = new JButton("Close");
-      fileChooser.setControlButtonsAreShown(false);
-      frame.getContentPane().add(fileChooser, BorderLayout.CENTER);
-      frame.getContentPane().add(btnClose, BorderLayout.SOUTH);
-      btnClose.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-          frame.dispose();
-        }
-      });
-      fileChooser.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent actionEvent) {
-          JFileChooser theFileChooser = (JFileChooser) actionEvent.getSource();
-          String command = actionEvent.getActionCommand();
-          if (command.equals(JFileChooser.APPROVE_SELECTION)) {
-            File selectedFile = theFileChooser.getSelectedFile();
-            // Handle Loaded File Here
-            System.out.println(selectedFile.getParent());
-            System.out.println(selectedFile.getName());
-          } else if (command.equals(JFileChooser.CANCEL_SELECTION)) {
-            System.out.println(JFileChooser.CANCEL_SELECTION);
-          }
-        }
-      });
-      frame.pack();
-      frame.setVisible(true);
-    }
-
-    /**
-     * January Jan. / February Feb. / March Mar. / April Apr. / May May / June Jun.
-     * / July Jul. / August Aug. / September Sep. / October Oct. / November Nov. /
-     * December Dec.
-     * 
-     * @param date Local Date
-     * @return String of Month Abbreviations
-     */
-    public String getMonthAbbreviation(LocalDate date) {
-      return date.getMonth().toString().substring(0, 3);
-    }
-
+    JFileChooser fileChooser = new JFileChooser(".");
+    JButton btnClose = new JButton("Close");
+    fileChooser.setControlButtonsAreShown(false);
+    frame.getContentPane().add(fileChooser, BorderLayout.CENTER);
+    frame.getContentPane().add(btnClose, BorderLayout.SOUTH);
+    btnClose.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        frame.dispose();
+      }
+    });
+  }
+  /**
+   * January Jan. February Feb. March Mar. April Apr. May May June Jun. July Jul.
+   * August Aug. September Sep. or Sept. October Oct. December Dec. November Nov.
+   * 
+   * @param date Local Date
+   * @return String of Month Abbreviations
+   */
+  public String getMonthAbbreviation(LocalDate date) {
+    return date.getMonth().toString().substring(0, 3);
+  }
 }
