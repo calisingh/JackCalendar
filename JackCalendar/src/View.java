@@ -100,13 +100,9 @@ public class View implements ChangeListener {
     /* Action Listener for buttons */
     createEventBtn.addActionListener(e -> createEventPopup());
 
-    prevDayBtn.addActionListener(e -> {
-      moveDateHandler(-1);
-    });
+    prevDayBtn.addActionListener(e -> moveDateHandler(-1));
 
-    nextDayBtn.addActionListener(e -> {
-      moveDateHandler(1);
-    });
+    nextDayBtn.addActionListener(e -> moveDateHandler(1));
 
     prevMonthBtn.addActionListener(e -> {
       currentDate = currentDate.minusMonths(1);
@@ -219,20 +215,49 @@ public class View implements ChangeListener {
 
   private void createEventPopup() {
     JFrame createFrame = new JFrame();
-    createFrame.setSize(500, 200);
-    createFrame.setTitle("Create New Event");
     JTextField eventName = new JTextField(10);
     JTextField startTime = new JTextField(10);
     JTextField endTime = new JTextField(10);
     JButton saveButton = new JButton("SAVE");
     JLabel to = new JLabel("to");
     saveButton.setSize(50, 50);
+    
     saveButton.addActionListener(e -> {
-      if (startTime.getText().isEmpty() && endTime.getText().isEmpty()) {
-        JOptionPane.showMessageDialog(null, "Please check your start or end time! It should be in HH:mm format");
-      } else if (!model.saveEvents(eventName.getText(), this.getCalendar(model).toZonedDateTime().toLocalDate(),
-          LocalTime.parse(startTime.getText(), DateTimeFormatter.ISO_LOCAL_TIME),
-          LocalTime.parse(endTime.getText(), DateTimeFormatter.ISO_LOCAL_TIME)).getValue()) {
+      String eventNameStr = eventName.getText();
+      String startTimeStr = startTime.getText();
+      String endTimeStr = endTime.getText();
+      String startTimeInLocalTime = startTimeStr + ":00";
+      String endTimeInLocalTime = endTimeStr + ":00";
+
+      if(Integer.parseInt(startTimeStr) < 10)
+        startTimeInLocalTime = "0" + startTimeInLocalTime;
+      if(Integer.parseInt(endTimeStr) < 10)
+        endTimeInLocalTime = "0" + endTimeInLocalTime;
+
+      /* Check if the event name is empty */
+      if (eventNameStr.isEmpty()) {
+        JOptionPane.showMessageDialog(null, "Please check the name of the event\n It should not be empty");
+      }
+      /* check if the event time is empty */
+      else if (startTimeStr.isEmpty() || endTimeStr.isEmpty()) {
+        JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should not be empty");
+      } 
+      /* check if the time inputs are integers */
+      else if (!isNumeric(startTimeStr) || !isNumeric(endTimeStr)) {
+        JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should be a numeric value");
+      }
+      /* check if the time inputs are numbers between 0 and 23 */
+      else if( Integer.parseInt(startTimeStr) < 0 || Integer.parseInt(startTimeStr) > 23 || Integer.parseInt(endTimeStr) < 0 || Integer.parseInt(endTimeStr) > 23) {
+          JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should be between 0 and 23");
+      }
+      /* check if the start time is greater than the end time */
+      else if( Integer.parseInt(startTimeStr) > Integer.parseInt(endTimeStr)) {
+        JOptionPane.showMessageDialog(null, "Please check your start or end time\n start time shoule be greater than end time");
+      }
+      /* check if time conflicts with another event */
+      else if (!model.saveEvents(eventNameStr, this.getCalendar(model).toZonedDateTime().toLocalDate(),
+          LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
+          LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME)).getValue()) {
         JFrame conflictMessage = new JFrame();
         conflictMessage.setLayout(new GridLayout(2, 0));
         JLabel jLabel = new JLabel("Event Time is conflicting! Please try again.");
@@ -242,38 +267,38 @@ public class View implements ChangeListener {
         conflictMessage.add(goBack);
         conflictMessage.setVisible(true);
         conflictMessage.pack();
-      } else {
+      } 
+      /* Successfully Create Event */
+      else {
         createFrame.dispose();
-        Event event = new Event(eventName.getText(), this.getCalendar(model).toZonedDateTime().toLocalDate(),
-            LocalTime.parse(startTime.getText(), DateTimeFormatter.ISO_LOCAL_TIME),
-            LocalTime.parse(endTime.getText(), DateTimeFormatter.ISO_LOCAL_TIME));
-        model.updateEvent(event);
+        Event event = new Event(eventNameStr, this.getCalendar(model).toZonedDateTime().toLocalDate(),
+            LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
+            LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME));
+        model.updateEvent(currentDate, event);
       }
     });
-    createFrame.setLayout(new FlowLayout());
+
     createFrame.add(new JLabel("Event"));
     createFrame.add(eventName);
     createFrame.add(startTime);
     createFrame.add(to);
     createFrame.add(endTime);
     createFrame.add(saveButton);
+
+    createFrame.setTitle("Create New Event");
+    createFrame.setSize(500, 200);
+    createFrame.setLocation(500, 250);
+    createFrame.setLayout(new FlowLayout());
     createFrame.setVisible(true);
 
   }
 
   private void dateAndDetails(int o) {
     String date = currentDate.getMonthValue() + "/" + currentDate.getDayOfMonth();
-
-    // String completeDate = ((this.getCalendar(model).get(Calendar.MONTH) + 1) + "/" + o + "/"
-    //     + this.getCalendar(model).get(Calendar.YEAR));
-    // if((this.getCalendar(model).get(Calendar.MONTH) + 1) < 10) completeDate = "0" + completeDate;
     StringBuilder events = new StringBuilder();
-    // LocalDate parsedDate = LocalDate.parse(completeDate, DateTimeFormatter.ofPattern("MM/dd/yyyy"));
-
-    // if (model.getEventMap().containsKey(parsedDate)) {
-    //   ArrayList<Event> list = model.getEventMap().get(parsedDate);
-      if (model.getEventMap().containsKey(currentDate)) {
-        ArrayList<Event> list = model.getEventMap().get(currentDate);
+    
+    if (model.getEventMap().containsKey(currentDate)) {
+      ArrayList<Event> list = model.getEventMap().get(currentDate);
       Collection<Event> nonDuplicateCollection = list.stream()
           .collect(Collectors.toMap(Event::getName, Function.identity(), (a, b) -> a)).values();
       List<Event> list1 = new ArrayList<>(nonDuplicateCollection);
@@ -290,7 +315,6 @@ public class View implements ChangeListener {
 
   /**
    * return the GregorianCalendar of the current model.
-   *
    * @param model
    * @return
    */
@@ -299,10 +323,9 @@ public class View implements ChangeListener {
   }
 
   /**
-   * January Jan. / February Feb. / March Mar. / April Apr. / May May / June Jun.
-   * / July Jul. / August Aug. / September Sep. / October Oct. / November Nov. /
-   * December Dec.
-   * 
+   * January - Jan. / February - Feb. / March - Mar. / April - Apr. / 
+   * May - May / June - Jun. / July - Jul. / August - Aug. / 
+   * September - Sep. / October - Oct. / November - Nov. / December - Dec.
    * @param date Local Date
    * @return String of Month Abbreviations
    */
@@ -313,14 +336,18 @@ public class View implements ChangeListener {
   public void currentDateToString(LocalDate c){
     System.out.println("Current Date: " + c.toString());
   }
-
   
+  /**
+   * This function adds JButton, JLabel Components to the JPanel, monthView 
+   * and shows month view corresponding to the LocalDate in parameter.
+   * @param c LocalDate
+   */
   public void showMonthlyCalendar(LocalDate c) {
     int totalDaysOfMonth = c.getMonth().length(c.isLeapYear());
     int offset = 0;
     String firstDayOfMonth = LocalDate.of(c.getYear(), c.getMonth(), 1).getDayOfWeek().name();
 
-    // offset depends on the first day of the first week
+    /* offset depends on the first day of the first week */
     if      (firstDayOfMonth == "SUNDAY")     offset = 0;
     else if (firstDayOfMonth == "MONDAY")     offset = 1;
     else if (firstDayOfMonth == "TUESDAY")    offset = 2;
@@ -395,10 +422,17 @@ public class View implements ChangeListener {
     }
   }
 
+  public static boolean isNumeric(String str) {
+    try {  
+      Integer.parseInt(str);  
+      return true;
+    } catch(NumberFormatException e){  
+      return false;  
+    }    
+  }
+
   @Override
   public void stateChanged(ChangeEvent e) {
-    // monthName.setText(Util.getMonths().get(this.getCalendar(model).get(Calendar.MONTH)) + " "
-    //     + this.getCalendar(model).get(Calendar.YEAR));
     dateAndDetails(this.getCalendar(model).get(Calendar.DAY_OF_MONTH));
   }
 }
