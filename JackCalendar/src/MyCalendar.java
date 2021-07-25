@@ -43,6 +43,11 @@ public class MyCalendar {
 		this.recurringEvents = new HashMap<>();
 		this.listeners = new ArrayList<>();
 		this.gregorianCalendar = new GregorianCalendar();
+
+		// Event event = new Event("New Event by JY", LocalDate.now(),
+		// LocalTime.parse("12:00", DateTimeFormatter.ISO_LOCAL_TIME),
+		// LocalTime.parse("14:00", DateTimeFormatter.ISO_LOCAL_TIME));
+		// updateEvent(event);
 	}
 
 	/**
