@@ -4,6 +4,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -21,7 +22,6 @@ public class View implements ChangeListener {
   private LocalDate currentDate;
   private final MyCalendar model;
   private final HashMap<Integer, JButton> daysButtons = new HashMap<>();
-  private boolean firstRun;
   private int lastHighlight;
 
   /* Variables for GUI */
@@ -40,8 +40,7 @@ public class View implements ChangeListener {
   private JLabel yearName = new JLabel("", SwingConstants.CENTER);
 
   public View(MyCalendar model) {
-    /* other instance variables */
-    firstRun = true;
+    /* Declare and initialize variables */
     this.model = model;
     lastHighlight = this.getCalendar(model).get(Calendar.DAY_OF_MONTH);
     currentDate = LocalDate.now();
@@ -50,16 +49,16 @@ public class View implements ChangeListener {
                     currentDate.getDayOfMonth();
 
     final JFrame frame = new JFrame();
-    // panels
+    /* panels */
     JPanel leftPanel = new JPanel();
     JPanel rightPanel = new JPanel();
     JPanel titlePanel = new JPanel();
     JPanel topRightPanel = new JPanel();
     JPanel bottomRightPanel = new JPanel();
-    // labels
+    /* labels */
     monthView = new JPanel();
     dayView = new JTextArea(10, 33);
-    // Buttons
+    /* Buttons */
     JButton prevMonthBtn = new JButton("<");
     JButton nextMonthBtn = new JButton(">");
     JButton prevDayBtn = new JButton("<");
@@ -72,9 +71,9 @@ public class View implements ChangeListener {
     JButton agendaBtn = new JButton("Agenda");
     JButton createEventBtn = new JButton("Create");
     JButton quitBtn = new JButton("Quit");
-    JButton fileBtn = new JButton("From File");
+    JButton fileBtn = new JButton("Load File");
 
-    // /* set panels */
+    /* set panels */
     leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
     leftPanel.setBorder(new EmptyBorder(BASE_SPACE,BASE_SPACE,BASE_SPACE,BASE_SPACE/2));
     rightPanel.setBorder(new EmptyBorder(BASE_SPACE/2,BASE_SPACE/2,BASE_SPACE, BASE_SPACE));
@@ -98,35 +97,23 @@ public class View implements ChangeListener {
     lastHighlight = currentDate.getDayOfMonth();
 
     /* Action Listener for buttons */
-    createEventBtn.addActionListener(e -> createEventPopup());
-
     prevDayBtn.addActionListener(e -> moveDateHandler(-1));
 
     nextDayBtn.addActionListener(e -> moveDateHandler(1));
 
-    prevMonthBtn.addActionListener(e -> {
-      currentDate = currentDate.minusMonths(1);
-      moveMonthHandler(currentDate);
-    });
+    prevMonthBtn.addActionListener(e -> moveMonthHandler(currentDate.minusMonths(1)));
 
-    nextMonthBtn.addActionListener(e -> {
-      currentDate = currentDate.plusMonths(1);
-      moveMonthHandler(currentDate);
-    });
+    nextMonthBtn.addActionListener(e -> moveMonthHandler(currentDate.plusMonths(1)));
 
-    todayBtn.addActionListener(e -> {
-        currentDate = LocalDate.now();
-        moveMonthHandler(currentDate);
-    });
+    todayBtn.addActionListener(e -> moveMonthHandler(LocalDate.now()));
 
-    quitBtn.addActionListener(e -> {
-      model.quit();
-      Runtime.getRuntime().exit(0);
-    });
+    createEventBtn.addActionListener(e -> createEventPopup());
 
+    fileBtn.addActionListener(e -> loadFileHandler());
 
-    // dateAndDetails(this.getCalendar(model).get(Calendar.DAY_OF_MONTH));
+    quitBtn.addActionListener(e -> frame.dispose());
 
+    /* Add components to containers */
     titlePanel.add(monthName);
     titlePanel.add(yearName);
     titlePanel.add(prevMonthBtn);
@@ -161,7 +148,6 @@ public class View implements ChangeListener {
     frame.setVisible(true);
   }
 
-
   private void moveDateHandler(int i) {
     GregorianCalendar cal = this.getCalendar(model);
     currentDate = currentDate.plusDays(i);
@@ -186,22 +172,22 @@ public class View implements ChangeListener {
     currentDateToString(currentDate);
   }
 
-  private void moveMonthHandler(LocalDate currentDate) {
+  private void moveMonthHandler(LocalDate c) {
+    currentDate = c;
     // update title
-    monthName.setText(getMonthAbbreviation(currentDate));
-    yearName.setText(Integer.toString(currentDate.getYear()));
+    monthName.setText(getMonthAbbreviation(c));
+    yearName.setText(Integer.toString(c.getYear()));
     // update monthly calendar
     monthView.removeAll();
-    showMonthlyCalendar(currentDate);
+    showMonthlyCalendar(c);
     model.updateListeners(this.getCalendar(model));
 
     /* Highlight the date*/
-    highlight(currentDate, lastHighlight);
-    lastHighlight = currentDate.getDayOfMonth();
+    highlight(c, lastHighlight);
+    lastHighlight = c.getDayOfMonth();
 
-    currentDateToString(currentDate);
+    currentDateToString(c);
   }
-
 
   /**
    * highligh the given date in the calendar.
@@ -218,21 +204,16 @@ public class View implements ChangeListener {
     JTextField eventName = new JTextField(10);
     JTextField startTime = new JTextField(10);
     JTextField endTime = new JTextField(10);
-    JButton saveButton = new JButton("SAVE");
+    JButton saveBtn = new JButton("SAVE");
     JLabel to = new JLabel("to");
-    saveButton.setSize(50, 50);
+    saveBtn.setSize(50, 50);
     
-    saveButton.addActionListener(e -> {
+    saveBtn.addActionListener(e -> {
       String eventNameStr = eventName.getText();
       String startTimeStr = startTime.getText();
       String endTimeStr = endTime.getText();
       String startTimeInLocalTime = startTimeStr + ":00";
       String endTimeInLocalTime = endTimeStr + ":00";
-
-      if(Integer.parseInt(startTimeStr) < 10)
-        startTimeInLocalTime = "0" + startTimeInLocalTime;
-      if(Integer.parseInt(endTimeStr) < 10)
-        endTimeInLocalTime = "0" + endTimeInLocalTime;
 
       /* Check if the event name is empty */
       if (eventNameStr.isEmpty()) {
@@ -254,27 +235,33 @@ public class View implements ChangeListener {
       else if( Integer.parseInt(startTimeStr) > Integer.parseInt(endTimeStr)) {
         JOptionPane.showMessageDialog(null, "Please check your start or end time\n start time shoule be greater than end time");
       }
-      /* check if time conflicts with another event */
-      else if (!model.saveEvents(eventNameStr, this.getCalendar(model).toZonedDateTime().toLocalDate(),
-          LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
-          LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME)).getValue()) {
-        JFrame conflictMessage = new JFrame();
-        conflictMessage.setLayout(new GridLayout(2, 0));
-        JLabel jLabel = new JLabel("Event Time is conflicting! Please try again.");
-        conflictMessage.add(jLabel);
-        JButton goBack = new JButton("Go Back");
-        goBack.addActionListener(e2 -> conflictMessage.dispose());
-        conflictMessage.add(goBack);
-        conflictMessage.setVisible(true);
-        conflictMessage.pack();
-      } 
-      /* Successfully Create Event */
       else {
-        createFrame.dispose();
-        Event event = new Event(eventNameStr, this.getCalendar(model).toZonedDateTime().toLocalDate(),
+        if(Integer.parseInt(startTimeStr) < 10)
+          startTimeInLocalTime = "0" + startTimeInLocalTime;
+        if(Integer.parseInt(endTimeStr) < 10)
+          endTimeInLocalTime = "0" + endTimeInLocalTime;
+        /* check if time conflicts with another event */
+        if (!model.saveEvents(eventNameStr, this.getCalendar(model).toZonedDateTime().toLocalDate(),
             LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
-            LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME));
-        model.updateEvent(currentDate, event);
+            LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME)).getValue()) {
+          JFrame conflictMessage = new JFrame();
+          conflictMessage.setLayout(new GridLayout(2, 0));
+          JLabel jLabel = new JLabel("Event Time is conflicting! Please try again.");
+          conflictMessage.add(jLabel);
+          JButton goBack = new JButton("Go Back");
+          goBack.addActionListener(e2 -> conflictMessage.dispose());
+          conflictMessage.add(goBack);
+          conflictMessage.setVisible(true);
+          conflictMessage.pack();
+        } 
+        /* Successfully Create Event */
+        else {
+          createFrame.dispose();
+          Event event = new Event(eventNameStr, currentDate,
+              LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
+              LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME));
+          model.updateEvent(currentDate, event);
+        }
       }
     });
 
@@ -283,7 +270,7 @@ public class View implements ChangeListener {
     createFrame.add(startTime);
     createFrame.add(to);
     createFrame.add(endTime);
-    createFrame.add(saveButton);
+    createFrame.add(saveBtn);
 
     createFrame.setTitle("Create New Event");
     createFrame.setSize(500, 200);
@@ -291,6 +278,47 @@ public class View implements ChangeListener {
     createFrame.setLayout(new FlowLayout());
     createFrame.setVisible(true);
 
+  }
+
+  private void loadFileHandler() {
+    JFrame loadFrame = new JFrame();
+    JLabel label = new JLabel("File Path");
+    JTextField fileNameField = new JTextField(10);
+    JButton loadBtn = new JButton("Load");
+
+    loadBtn.addActionListener(e -> {
+      String fileName = "JackCalendar/data/" + fileNameField.getText();
+
+      try {
+        model.loadAndUpdateEvents(fileName);
+        loadFrame.dispose();
+      }catch (FileNotFoundException fnf) {
+        JFrame fnfMessage = new JFrame();
+        JLabel jLabel = new JLabel("The File is not Found");
+        JButton goBack = new JButton("Go Back");
+        goBack.addActionListener(e2 -> fnfMessage.dispose());
+
+        fnfMessage.add(jLabel);
+        fnfMessage.add(goBack);
+        fnfMessage.setLayout(new GridLayout(2, 0));
+        fnfMessage.setLocation(700, 320);
+        fnfMessage.setVisible(true);
+        fnfMessage.pack();
+      }
+
+      fileNameField.setText("");
+    });
+
+    loadFrame.add(label);
+    loadFrame.add(fileNameField);
+    loadFrame.add(loadBtn);
+    loadFrame.add(new JLabel("(hint: input.txt)"));
+
+    loadFrame.setTitle("Load Events From File");
+    loadFrame.setSize(500, 200);
+    loadFrame.setLocation(500, 250);
+    loadFrame.setLayout(new FlowLayout());
+    loadFrame.setVisible(true);
   }
 
   private void dateAndDetails(int o) {
@@ -318,7 +346,7 @@ public class View implements ChangeListener {
    * @param model
    * @return
    */
-  public GregorianCalendar getCalendar(MyCalendar model) {
+  private GregorianCalendar getCalendar(MyCalendar model) {
     return model.getGregorianCalendar();
   }
 
@@ -329,11 +357,11 @@ public class View implements ChangeListener {
    * @param date Local Date
    * @return String of Month Abbreviations
    */
-  public String getMonthAbbreviation(LocalDate date) {
+  private String getMonthAbbreviation(LocalDate date) {
     return date.getMonth().toString().substring(0, 3);
   }
 
-  public void currentDateToString(LocalDate c){
+  private void currentDateToString(LocalDate c){
     System.out.println("Current Date: " + c.toString());
   }
   
@@ -342,7 +370,7 @@ public class View implements ChangeListener {
    * and shows month view corresponding to the LocalDate in parameter.
    * @param c LocalDate
    */
-  public void showMonthlyCalendar(LocalDate c) {
+  private void showMonthlyCalendar(LocalDate c) {
     int totalDaysOfMonth = c.getMonth().length(c.isLeapYear());
     int offset = 0;
     String firstDayOfMonth = LocalDate.of(c.getYear(), c.getMonth(), 1).getDayOfWeek().name();
@@ -422,7 +450,7 @@ public class View implements ChangeListener {
     }
   }
 
-  public static boolean isNumeric(String str) {
+  private static boolean isNumeric(String str) {
     try {  
       Integer.parseInt(str);  
       return true;

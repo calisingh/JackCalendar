@@ -9,14 +9,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 /**
  * MyCalendar class handles all the backend logic for this solution. It is
@@ -43,11 +43,6 @@ public class MyCalendar {
 		this.recurringEvents = new HashMap<>();
 		this.listeners = new ArrayList<>();
 		this.gregorianCalendar = new GregorianCalendar();
-
-		// Event event = new Event("New Event by JY", LocalDate.now(),
-		// LocalTime.parse("12:00", DateTimeFormatter.ISO_LOCAL_TIME),
-		// LocalTime.parse("14:00", DateTimeFormatter.ISO_LOCAL_TIME));
-		// updateEvent(event);
 	}
 
 	/**
@@ -55,64 +50,52 @@ public class MyCalendar {
 	 * file in a particular format and generate events from it and store them in the
 	 * appropriate map.
 	 *
-	 * @param args file File: file to read reservations from
+	 * @param filename file File: file to read reservations from
 	 * @throws FileNotFoundException
 	 */
-	public void loadEvents(String args) throws FileNotFoundException {
-		print("Loading One-Time events");
-		File file = new File(args);
-		if (file.exists() && !file.isDirectory()) {
-			Scanner fileScanner = new Scanner(file);
-			while (fileScanner.hasNext()) {
-				String name = fileScanner.nextLine();
-				String[] details = fileScanner.nextLine().split("\\s+");
-				if (details.length == 3) {
-					loadAndSaveEvents(name, details[0], details[1], details[2]);
-				} else {
-					String[] actualDate = details[3].split("/");
-					int year = Integer.parseInt(actualDate[2]) + 2000;
-					int dayOfMonth = Integer.parseInt(actualDate[1]);
-					int month = Integer.parseInt(actualDate[0]);
-					LocalDate startDate = LocalDate.of(year, month, dayOfMonth);
-					LocalDate date = startDate;
-					String[] actualDate1 = details[4].split("/");
-					int year1 = Integer.parseInt(actualDate1[2]) + 2000;
-					int dayOfMonth1 = Integer.parseInt(actualDate1[1]);
-					int month1 = Integer.parseInt(actualDate1[0]);
-					LocalDate endDate = LocalDate.of(year1, month1, dayOfMonth1);
-					long weeks = ChronoUnit.WEEKS.between(date, endDate);
-					String days = details[0]; // event days For eg . TF
-					for (int i = 0; i < days.length(); i++) {
-						int w = (int) weeks;
-						date = LocalDate.of(year, month, dayOfMonth);
-						DayOfWeek dayOfWeek = date.getDayOfWeek(); // gets the day on the given starting day
-						String dayOfWeek2 = getDayOfWeek(days.substring(i, i + 1)); // gets the first two letters of
-																					// that day
-						boolean sub = false;
-						while (!dayOfWeek2.equals(dayOfWeek.toString().substring(0, 2))) {
-							date = date.plusDays(1);
-							dayOfWeek = dayOfWeek.plus(1);
-							sub = true;
-						}
-						if (!sub) {
-							w = (int) (weeks + 1);
-						}
-						for (int j = 0; j < w; j++) {
-							loadAndSaveEventsRecurring(name, details[0], date, details[1], details[2], startDate,
-									endDate);
-							date = date.plusDays(7);
-						}
-					}
+	public void loadAndUpdateEvents(String filename) throws FileNotFoundException{
+		print("## Loading '" + filename +"' ##");
+		File file = new File(filename);
+		Scanner fileScanner = new Scanner(file);
+		while (fileScanner.hasNextLine()) {
+			String[] details = fileScanner.nextLine().split(";");
+			String name = details[0];
+			int year = Integer.parseInt(details[1]);
+			int startMonth = Integer.parseInt(details[2]);
+			int endMonth = Integer.parseInt(details[3]);
+			String recursOn = details[4];
+			LocalDate startDate = LocalDate.of(year, startMonth, 1).with(TemporalAdjusters.firstDayOfMonth());
+			LocalDate endDate = LocalDate.of(year, endMonth, 1).with(TemporalAdjusters.lastDayOfMonth());
+			String startTime = details[5];
+			String endTime = details[6];
+
+			if(Integer.parseInt(startTime) < 10) 	startTime = "0" + startTime;
+			if(Integer.parseInt(endTime) < 10) 			endTime = "0" + endTime;
+			startTime += ":00";
+			endTime += ":00";
+
+			List<LocalDate> tempLocalDateList = startDate.datesUntil(endDate.plusDays(1))
+																			.collect(Collectors.toList());
+			ArrayList<String> dofList = new ArrayList<String>();
+			for(int i = 0; i < recursOn.length(); i++) {
+				dofList.add(getDayOfWeek("" + recursOn.charAt(i)));
+			}
+
+			for(LocalDate c: tempLocalDateList) {
+				if(dofList.contains(c.getDayOfWeek().toString())) {
+					LocalTime start = LocalTime.parse(startTime, DateTimeFormatter.ISO_LOCAL_TIME);
+					LocalTime end = LocalTime.parse(endTime, DateTimeFormatter.ISO_LOCAL_TIME);
+					Event event = new Event(name, c, start, end);
+					updateEvent(c, event);
 				}
 			}
-			fileScanner.close();
-		} else {
-			print("This is the first run! Any previous records not found.");
-		}
-		print("##Loading Recurring events##");
-		recurringEvents.forEach((key, value) -> print("Loaded " + key));
-		print("Loading is done!");
 
+			print("Loading '" + name + "' is done!");
+		}
+		fileScanner.close();
+		for (ChangeListener l : listeners) {
+			l.stateChanged(new ChangeEvent(this));
+		}
 	}
 
 	/**
@@ -123,7 +106,6 @@ public class MyCalendar {
 	 * for the event conflicts with the other event, then a error is thrown with
 	 * appropriate message.
 	 */
-
 	public void createEvent() {
 		print("Enter the name of the event:");
 		String name = sc.nextLine();
@@ -594,7 +576,7 @@ public class MyCalendar {
 			}
 		}
 		try {
-			Path file = Paths.get("output.txt");
+			Path file = Paths.get("JackCalendar/data/output.txt");
 			Files.write(file, toWrite, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -603,22 +585,20 @@ public class MyCalendar {
 	}
 
 	private Pair<LocalTime, LocalTime> timeFormatter(String startingTime, String endingTime) {
-		String[] timeStart = startingTime.split(":");
-		String[] timeEnd = endingTime.split(":");
-		LocalTime start = LocalTime.of(Integer.parseInt(timeStart[0]), Integer.parseInt(timeStart[1]));
-		LocalTime last = LocalTime.of(Integer.parseInt(timeEnd[0]), Integer.parseInt(timeEnd[1]));
+		LocalTime start = LocalTime.parse(startingTime, DateTimeFormatter.ISO_LOCAL_TIME);
+		LocalTime last = LocalTime.parse(endingTime, DateTimeFormatter.ISO_LOCAL_TIME);
 		return new Pair<>(start, last);
 	}
 
 	private String getDayOfWeek(String detail) {
 		HashMap<String, String> val = new HashMap<>();
-		val.put("s", "SU");
-		val.put("m", "MO");
-		val.put("t", "TU");
-		val.put("w", "WE");
-		val.put("r", "TH");
-		val.put("f", "FR");
-		val.put("a", "SA");
+		val.put("s", "SUNDAY");
+		val.put("m", "MONDAY");
+		val.put("t", "TUESDAY");
+		val.put("w", "WEDNESDAY");
+		val.put("r", "THURSDAY");
+		val.put("f", "FRIDAY");
+		val.put("a", "SATURDAY");
 		return val.get(detail.toLowerCase());
 	}
 
@@ -649,7 +629,6 @@ public class MyCalendar {
 	 *
 	 * @param calendar
 	 */
-
 	public void updateListeners(GregorianCalendar calendar) {
 		gregorianCalendar = calendar;
 		for (ChangeListener listener : listeners) {
@@ -672,13 +651,15 @@ public class MyCalendar {
 	 * @param event
 	 */
 	public void updateEvent(LocalDate c, Event event) {
-		
-		System.out.println(events);
-		ArrayList<Event> list = events.get(c);
-		if(events.get(c) == null) 
-			list = new ArrayList<Event>();
-		list.add(event);
-		events.put(c, list);
+		if(events.containsKey(c)) {
+			events.get(c).add(event);
+		}
+		else {
+			ArrayList<Event> list = new ArrayList<Event>();
+			list.add(event);
+			events.put(c, list);
+		}
+
 		for (ChangeListener l : listeners) {
 			l.stateChanged(new ChangeEvent(this));
 		}
@@ -692,5 +673,4 @@ public class MyCalendar {
 	public HashMap<LocalDate, ArrayList<Event>> getEventMap() {
 		return events;
 	}
-
 }
