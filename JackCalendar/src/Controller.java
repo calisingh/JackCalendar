@@ -6,7 +6,7 @@ import java.util.GregorianCalendar;
 /**
  * Controller class represents the controller for the application.
  * 
- * @authors Kunwarpreet, Jooyul, Carrisa
+ * @authors Kunwarpreet, Jooyul, Carissa
  */
 public class Controller extends JPanel {
 

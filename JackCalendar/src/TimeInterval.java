@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * TimeInterval is used to check if two events are conflicting.
  *
- * @authors Kunwarpreet, Jooyul, Carrisa
+ * @authors Kunwarpreet, Jooyul, Carissa
  */
 public class TimeInterval {
 	/**

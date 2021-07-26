@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * View for the application.
  *
- * @authors Kunwarpreet, Jooyul, Carrisa
+ * @authors Kunwarpreet, Jooyul, Carissa
  */
 public class View implements ChangeListener {
   private LocalDate currentDate;

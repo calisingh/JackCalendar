@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * responsible to providing the functionality to the user. This acts as the
  * model for the application.
  *
- * @authors Kunwarpreet, Jooyul, Carrisa
+ * @authors Kunwarpreet, Jooyul, Carissa
  */
 public class MyCalendar {
 	private final Scanner sc = null;
