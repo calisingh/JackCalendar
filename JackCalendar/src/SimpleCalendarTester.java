@@ -1,5 +1,5 @@
 /**
- * @authors Kunwarpreet, Jooyul, Carissa Lee
+ * @authors Kunwarpreet, Jooyul, Carissa
  */
 public class SimpleCalendarTester {
 	/**

@@ -6,7 +6,7 @@ import java.time.LocalTime;
  * 'date', 'startTime', 'endTime' etc which can be used to lookup an event. This
  * class consists of constructor, and getters and setters.
  *
- * @authors Kunwarpreet, Jooyul, Carrisa
+ * @authors Kunwarpreet, Jooyul, Carissa
  */
 
 public class Event {
