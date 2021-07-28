@@ -167,15 +167,6 @@ public class MyCalendar {
 					+ conflicts.getKey().getName() + " \"");
 			return new Pair<>(null, false);
 		}
-
-		ArrayList<Event> list;
-		if (events.containsKey(parsedDate)) {
-			list = events.get(parsedDate);
-		} else {
-			list = new ArrayList<>();
-		}
-		list.add(event);
-		events.put(parsedDate, list);
 		return new Pair<>(event, true);
 
 	}
@@ -656,7 +647,7 @@ public class MyCalendar {
 	 * @param event
 	 */
 	public void updateEvent(LocalDate c, Event event) {
-		if(events.containsKey(c)) {
+		if(events.get(c) != null) {
 			events.get(c).add(event);
 		}
 		else {
