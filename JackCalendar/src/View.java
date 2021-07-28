@@ -124,15 +124,15 @@ public class View implements ChangeListener {
     lastHighlight = currentDate.getDayOfMonth();
 
     /* Action Listener for Buttons */
-    prevDayBtn.addActionListener(e -> updateAndShowCurrentDate(currentDate.minusDays(1)));
+    prevDayBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.minusDays(1)));
 
-    nextDayBtn.addActionListener(e -> updateAndShowCurrentDate(currentDate.plusDays(1)));
+    nextDayBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.plusDays(1)));
 
-    prevMonthBtn.addActionListener(e -> updateAndShowCurrentDate(currentDate.minusMonths(1)));
+    prevMonthBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.minusMonths(1)));
 
-    nextMonthBtn.addActionListener(e -> updateAndShowCurrentDate(currentDate.plusMonths(1)));
+    nextMonthBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.plusMonths(1)));
 
-    todayBtn.addActionListener(e -> updateAndShowCurrentDate(LocalDate.now()));
+    todayBtn.addActionListener(e -> updateAndHighlightCurrentDate(LocalDate.now()));
 
     dayBtn.addActionListener(e -> dayViewHandler());
 
@@ -184,12 +184,88 @@ public class View implements ChangeListener {
     frame.setVisible(true);
   }
 
-  private void highlightBtn(JButton btn) {
-    dayBtn.setBorder(UIManager.getBorder("Button.border"));
-    weekBtn.setBorder(UIManager.getBorder("Button.border"));
-    monthBtn.setBorder(UIManager.getBorder("Button.border"));
-    agendaBtn.setBorder(UIManager.getBorder("Button.border"));
-    btn.setBorder(new LineBorder(Color.pink, 2, true));
+  private void updateAndHighlightCurrentDate(LocalDate dateToUpdate) {
+    /* Update Current Date */
+    currentDate = dateToUpdate;
+
+    /* Update Title */
+    monthName.setText(getMonthAbbreviation(dateToUpdate));
+    yearName.setText(Integer.toString(dateToUpdate.getYear())); 
+
+    /* Update Monthly Calendar */
+    monthlyCalendarPanel.removeAll();
+    showMonthlyCalendar(dateToUpdate);
+
+    /* Highlight the date*/
+    highlight(dateToUpdate, lastHighlight);
+    lastHighlight = dateToUpdate.getDayOfMonth();
+
+    switch(viewStatus) {
+      case 'd': dayViewHandler(); break;
+      case 'w': weekViewHandler(); break;
+      case 'm': monthViewHandler(); break;
+      case 'a': dayViewHandler(); break;
+      default: break;
+    }
+  }
+
+  private void showSchedule() {
+    contentText.setText("");
+    switch(viewStatus) {
+      case 'd':{
+        String date = currentDate.getMonthValue() + "/" + currentDate.getDayOfMonth();
+        StringBuilder events = new StringBuilder();
+      
+        if (model.getEventMap().containsKey(currentDate)) {
+          ArrayList<Event> list = model.getEventMap().get(currentDate);
+          Collection<Event> nonDuplicateCollection = list.stream()
+              .collect(Collectors.toMap(Event::getName, Function.identity(), (a, b) -> a)).values();
+          List<Event> list1 = new ArrayList<>(nonDuplicateCollection);
+          list1.sort(Comparator.comparing(Event::getStartTime));
+          for (Event event : list1) {
+            events.append(event.getName()).append(" ").append(event.getStartTime()).append(" ").append(event.getEndTime());
+            events.append("\n");
+          }
+        }
+        contentText.append(currentDate.getDayOfWeek().toString() + "   " + date);
+        contentText.append("\n\n");
+        contentText.append(events.toString());
+        break;
+      }
+      case 'w':
+      case 'm':
+      case 'a':{
+        String startDateStr = daysToShow.get(0).toString();
+        String endDateStr = daysToShow.get(daysToShow.size() - 1).toString();
+        contentText.append(startDateStr + "   ~   " + endDateStr + "\n\n");
+
+        for(LocalDate dates: daysToShow) {
+          StringBuilder events = new StringBuilder();
+          String date = dates.getDayOfWeek().toString().substring(0,3) + "   " + 
+                        dates.getMonthValue() + "/" + dates.getDayOfMonth();
+          
+          if (model.getEventMap().containsKey(dates)) {
+            ArrayList<Event> list = model.getEventMap().get(dates);
+            Collection<Event> nonDuplicateCollection = list.stream()
+                .collect(Collectors.toMap(Event::getName, Function.identity(), (a, b) -> a)).values();
+            List<Event> list1 = new ArrayList<>(nonDuplicateCollection);
+            list1.sort(Comparator.comparing(Event::getStartTime));
+            for (Event event : list1) {
+              events.append(event.getName() + " | ");
+            }
+            contentText.append(date);
+            contentText.append("  -  ");
+            contentText.append(events.toString());
+            contentText.append("\n");
+          }
+        }
+        break;
+      }
+      default:{
+        contentText.setText("ERROR: Unknown View Selector");
+        break;
+      }
+    }
   }
 
   /**
@@ -299,43 +375,6 @@ public class View implements ChangeListener {
     agendaFrame.setSize(500, 200);
     agendaFrame.setLocation(500, 250);
     agendaFrame.setVisible(true);
-  }
-
-  private void updateAndShowCurrentDate(LocalDate dateToUpdate) {
-    /* Update Current Date */
-    currentDate = dateToUpdate;
-
-    /* Update Title */
-    monthName.setText(getMonthAbbreviation(dateToUpdate));
-    yearName.setText(Integer.toString(dateToUpdate.getYear())); 
-
-    /* Update Monthly Calendar */
-    monthlyCalendarPanel.removeAll();
-    showMonthlyCalendar(dateToUpdate);
-
-    /* Highlight the date*/
-    highlight(dateToUpdate, lastHighlight);
-    lastHighlight = dateToUpdate.getDayOfMonth();
-
-    switch(viewStatus) {
-      case 'd': dayViewHandler(); break;
-      case 'w': weekViewHandler(); break;
-      case 'm': monthViewHandler(); break;
-      case 'a': dayViewHandler(); break;
-      default: break;
-    }
-
-    // currentDateToString(dateToUpdate);
-  }
-
-  /**
-   * highligh the given date in the calendar.
-   *
-   * @param i
-   */
-  public void highlight(LocalDate c, int lastHighlight) {
-    daysButtons.get(lastHighlight).setBorder(UIManager.getBorder("Button.border"));
-    daysButtons.get(c.getDayOfMonth()).setBorder(new LineBorder(Color.pink, 3, true));
   }
 
   private void createEventPopup() {
@@ -461,65 +500,23 @@ public class View implements ChangeListener {
     loadFrame.setLayout(new FlowLayout());
     loadFrame.setVisible(true);
   }
+  
+  private void highlightBtn(JButton btn) {
+    dayBtn.setBorder(UIManager.getBorder("Button.border"));
+    weekBtn.setBorder(UIManager.getBorder("Button.border"));
+    monthBtn.setBorder(UIManager.getBorder("Button.border"));
+    agendaBtn.setBorder(UIManager.getBorder("Button.border"));
+    btn.setBorder(new LineBorder(Color.pink, 2, true));
+  }
 
-  private void showSchedule() {
-    contentText.setText("");
-    switch(viewStatus) {
-      case 'd':{
-        String date = currentDate.getMonthValue() + "/" + currentDate.getDayOfMonth();
-        StringBuilder events = new StringBuilder();
-      
-        if (model.getEventMap().containsKey(currentDate)) {
-          ArrayList<Event> list = model.getEventMap().get(currentDate);
-          Collection<Event> nonDuplicateCollection = list.stream()
-              .collect(Collectors.toMap(Event::getName, Function.identity(), (a, b) -> a)).values();
-          List<Event> list1 = new ArrayList<>(nonDuplicateCollection);
-          list1.sort(Comparator.comparing(Event::getStartTime));
-          for (Event event : list1) {
-            events.append(event.getName()).append(" ").append(event.getStartTime()).append(" ").append(event.getEndTime());
-            events.append("\n");
-          }
-        }
-        contentText.append(currentDate.getDayOfWeek().toString() + "   " + date);
-        contentText.append("\n\n");
-        contentText.append(events.toString());
-        break;
-      }
-      case 'w':
-      case 'm':
-      case 'a':{
-        String startDateStr = daysToShow.get(0).toString();
-        String endDateStr = daysToShow.get(daysToShow.size() - 1).toString();
-        contentText.append(startDateStr + "   ~   " + endDateStr + "\n\n");
-
-        for(LocalDate dates: daysToShow) {
-          StringBuilder events = new StringBuilder();
-          String date = dates.getDayOfWeek().toString().substring(0,3) + "   " + 
-                        dates.getMonthValue() + "/" + dates.getDayOfMonth();
-          
-          if (model.getEventMap().containsKey(dates)) {
-            ArrayList<Event> list = model.getEventMap().get(dates);
-            Collection<Event> nonDuplicateCollection = list.stream()
-                .collect(Collectors.toMap(Event::getName, Function.identity(), (a, b) -> a)).values();
-            List<Event> list1 = new ArrayList<>(nonDuplicateCollection);
-            list1.sort(Comparator.comparing(Event::getStartTime));
-            for (Event event : list1) {
-              events.append(event.getName() + " | ");
-            }
-            contentText.append(date);
-            contentText.append("  -  ");
-            contentText.append(events.toString());
-            contentText.append("\n");
-          }
-        }
-        break;
-      }
-      default:{
-        contentText.setText("ERROR: Unknown View Selector");
-        break;
-      }
-    }
-
+  /**
+   * highligh the given date in the calendar.
+   *
+   * @param i
+   */
+  public void highlight(LocalDate c, int lastHighlight) {
+    daysButtons.get(lastHighlight).setBorder(UIManager.getBorder("Button.border"));
+    daysButtons.get(c.getDayOfMonth()).setBorder(new LineBorder(Color.pink, 3, true));
   }
 
   /**
