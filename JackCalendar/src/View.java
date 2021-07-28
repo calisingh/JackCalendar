@@ -35,7 +35,8 @@ public class View implements ChangeListener {
   final int BASE_SPACE = 20;
   final int PANEL_WIDTH = (WINDOW_WIDTH - 3 * BASE_SPACE) / 2;
   final int PANEL_HEIGHT = WINDOW_HEIGHT - 2 * BASE_SPACE;
-  final int BTN_SIZE = 25;
+  final int BTN_WIDTH = 79;
+  final int BTN_HEIGHT = 20;
   final int CALENDAR_ROW = 6;
   final int CALENDAR_COL = 7;
 
@@ -43,6 +44,10 @@ public class View implements ChangeListener {
   private final JTextArea contentText;
   private JLabel monthName = new JLabel("", SwingConstants.CENTER);
   private JLabel yearName = new JLabel("", SwingConstants.CENTER);
+  JButton dayBtn = new JButton("Day");
+  JButton weekBtn = new JButton("Week");
+  JButton monthBtn = new JButton("Month");
+  JButton agendaBtn = new JButton("Agenda");
 
   /**
    * Constructor
@@ -78,10 +83,6 @@ public class View implements ChangeListener {
     JButton prevDayBtn = new JButton("<");
     JButton nextDayBtn = new JButton(">");
     JButton todayBtn = new JButton("today");
-    JButton dayBtn = new JButton("D");
-    JButton weekBtn = new JButton("W");
-    JButton monthBtn = new JButton("M");
-    JButton agendaBtn = new JButton("Agenda");
     JButton createEventBtn = new JButton("Create");
     JButton quitBtn = new JButton("Quit");
     JButton fileBtn = new JButton("Load File");
@@ -104,10 +105,21 @@ public class View implements ChangeListener {
     contentText.setEditable(false);
     monthlyCalendarPanel.setLayout(new GridLayout(7, 7));
     prevMonthBtn.setPreferredSize(new Dimension(20, 30));
+    dayBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    weekBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    monthBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    agendaBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    quitBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    prevDayBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    nextDayBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    createEventBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    fileBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    
     quitBtn.setForeground(Color.RED);
     
     /* Create Buttons and Highlight today */
     showMonthlyCalendar(currentDate);
+    highlightBtn(dayBtn);
     highlight(currentDate, lastHighlight);
     lastHighlight = currentDate.getDayOfMonth();
 
@@ -172,6 +184,14 @@ public class View implements ChangeListener {
     frame.setVisible(true);
   }
 
+  private void highlightBtn(JButton btn) {
+    dayBtn.setBorder(UIManager.getBorder("Button.border"));
+    weekBtn.setBorder(UIManager.getBorder("Button.border"));
+    monthBtn.setBorder(UIManager.getBorder("Button.border"));
+    agendaBtn.setBorder(UIManager.getBorder("Button.border"));
+    btn.setBorder(new LineBorder(Color.pink, 2, true));
+  }
+
   /**
    * It switches the view selection mode to 'day view', then update the content
    */
@@ -180,6 +200,7 @@ public class View implements ChangeListener {
     daysToShow.clear();
     daysToShow = new ArrayList<>();
     daysToShow.add(currentDate);
+    highlightBtn(dayBtn);
     
     showSchedule();
   }
@@ -192,6 +213,7 @@ public class View implements ChangeListener {
     LocalDate startDate = currentDate.with(WeekFields.of(Locale.US).dayOfWeek(), 1L);
     LocalDate lastDate = currentDate.with(WeekFields.of(Locale.US).dayOfWeek(), 7L);
     daysToShow = startDate.datesUntil(lastDate.plusDays(1)).collect(Collectors.toList());
+    highlightBtn(weekBtn);
     
     showSchedule();
   }
@@ -207,12 +229,14 @@ public class View implements ChangeListener {
     LocalDate startDate = LocalDate.of(currentYear, currentMonth, 1);
     LocalDate lastDate = LocalDate.of(currentYear, currentMonth, lastDateOfMonth);
     daysToShow = startDate.datesUntil(lastDate.plusDays(1)).collect(Collectors.toList());
+    highlightBtn(monthBtn);
 
     showSchedule();
   }
 
   /**
    * This switches the view selection mode to 'agenda view', then update the content
+   * This also pop ups a new frame to set period of time to search
    */
   private void agendaViewHandler() {
     viewStatus = 'a';
@@ -244,6 +268,7 @@ public class View implements ChangeListener {
         } 
         else {
           daysToShow = startLocalDate.datesUntil(endLocalDate.plusDays(1)).collect(Collectors.toList());
+          highlightBtn(agendaBtn);
           showSchedule();
           agendaFrame.dispose();
         }
@@ -310,7 +335,7 @@ public class View implements ChangeListener {
    */
   public void highlight(LocalDate c, int lastHighlight) {
     daysButtons.get(lastHighlight).setBorder(UIManager.getBorder("Button.border"));
-    daysButtons.get(c.getDayOfMonth()).setBorder(new LineBorder(Color.RED, 2, true));
+    daysButtons.get(c.getDayOfMonth()).setBorder(new LineBorder(Color.pink, 3, true));
   }
 
   private void createEventPopup() {
