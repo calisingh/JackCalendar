@@ -5,9 +5,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.io.FileNotFoundException;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.WeekFields;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
@@ -23,9 +26,11 @@ public class View implements ChangeListener {
   private final MyCalendar model;
   private final HashMap<Integer, JButton> daysButtons = new HashMap<>();
   private int lastHighlight;
+  private char viewStatus;
+  private List<LocalDate> daysToShow;
 
   /* Variables for GUI */
-  final int WINDOW_WIDTH = 880;
+  final int WINDOW_WIDTH = 900;
   final int WINDOW_HEIGHT = 300;
   final int BASE_SPACE = 20;
   final int PANEL_WIDTH = (WINDOW_WIDTH - 3 * BASE_SPACE) / 2;
@@ -34,78 +39,96 @@ public class View implements ChangeListener {
   final int CALENDAR_ROW = 6;
   final int CALENDAR_COL = 7;
 
-  private final JPanel monthView;
-  private final JTextArea dayView;
+  private final JPanel monthlyCalendarPanel;
+  private final JTextArea contentText;
   private JLabel monthName = new JLabel("", SwingConstants.CENTER);
   private JLabel yearName = new JLabel("", SwingConstants.CENTER);
 
+  /**
+   * Constructor
+   */
   public View(MyCalendar model) {
-    /* Declare and initialize variables */
+
+    /* Initialize Default Variables */
     this.model = model;
     lastHighlight = this.getCalendar(model).get(Calendar.DAY_OF_MONTH);
     currentDate = LocalDate.now();
+    daysToShow = new ArrayList<>();
+    daysToShow.add(currentDate);
     String today = currentDate.getDayOfWeek().toString() + " " + 
                     currentDate.getMonthValue() + "/" + 
                     currentDate.getDayOfMonth();
+    viewStatus = 'd'; // Default View Status: day view 
 
+    /** Initialize GUI components **/
     final JFrame frame = new JFrame();
     /* panels */
     JPanel leftPanel = new JPanel();
     JPanel rightPanel = new JPanel();
-    JPanel titlePanel = new JPanel();
+    JPanel topLeftPanel = new JPanel();
     JPanel topRightPanel = new JPanel();
     JPanel bottomRightPanel = new JPanel();
     /* labels */
-    monthView = new JPanel();
-    dayView = new JTextArea(10, 33);
+    monthlyCalendarPanel = new JPanel();
+    contentText = new JTextArea(10, 33);
+    JScrollPane scrollPane = new JScrollPane(contentText);
     /* Buttons */
     JButton prevMonthBtn = new JButton("<");
     JButton nextMonthBtn = new JButton(">");
     JButton prevDayBtn = new JButton("<");
     JButton nextDayBtn = new JButton(">");
     JButton todayBtn = new JButton("today");
-
-    JButton dayBtn = new JButton("Day");
-    JButton WeekBtn = new JButton("Week");
-    JButton monthBtn = new JButton("Month");
+    JButton dayBtn = new JButton("D");
+    JButton weekBtn = new JButton("W");
+    JButton monthBtn = new JButton("M");
     JButton agendaBtn = new JButton("Agenda");
     JButton createEventBtn = new JButton("Create");
     JButton quitBtn = new JButton("Quit");
     JButton fileBtn = new JButton("Load File");
 
-    /* set panels */
+    /* set up panels */
     leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
     leftPanel.setBorder(new EmptyBorder(BASE_SPACE,BASE_SPACE,BASE_SPACE,BASE_SPACE/2));
+    rightPanel.setLayout(new BorderLayout());
     rightPanel.setBorder(new EmptyBorder(BASE_SPACE/2,BASE_SPACE/2,BASE_SPACE, BASE_SPACE));
-    titlePanel.setLayout(new GridLayout(1, 0));
-    titlePanel.setBorder(new EmptyBorder(0, BASE_SPACE, BASE_SPACE/2, BASE_SPACE));
+    topLeftPanel.setLayout(new GridLayout(1, 0));
+    topLeftPanel.setBorder(new EmptyBorder(0, BASE_SPACE, BASE_SPACE/2, BASE_SPACE));
+    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     
-    /* set components (JTextArea allows to have multiple lines (multiple events)) */
+    /* set up components (JTextArea allows to have multiple lines (multiple events)) */
     monthName.setText(getMonthAbbreviation(currentDate));
     yearName.setText(Integer.toString(currentDate.getYear()));
-    dayView.setText(today);
+    contentText.setText(today);
     monthName.setFont(new Font("Arial", Font.BOLD, 20));
-    dayView.setEditable(false);
-    monthView.setLayout(new GridLayout(7, 7));
+    contentText.setEditable(false);
+    monthlyCalendarPanel.setLayout(new GridLayout(7, 7));
     prevMonthBtn.setPreferredSize(new Dimension(20, 30));
     quitBtn.setForeground(Color.RED);
     
-
     /* Create Buttons and Highlight today */
     showMonthlyCalendar(currentDate);
     highlight(currentDate, lastHighlight);
     lastHighlight = currentDate.getDayOfMonth();
 
-    /* Action Listener for buttons */
-    prevDayBtn.addActionListener(e -> moveDateHandler(-1));
+    /* Action Listener for Buttons */
+    prevDayBtn.addActionListener(e -> updateAndShowCurrentDate(currentDate.minusDays(1)));
 
-    nextDayBtn.addActionListener(e -> moveDateHandler(1));
+    nextDayBtn.addActionListener(e -> updateAndShowCurrentDate(currentDate.plusDays(1)));
 
-    prevMonthBtn.addActionListener(e -> moveMonthHandler(currentDate.minusMonths(1)));
+    prevMonthBtn.addActionListener(e -> updateAndShowCurrentDate(currentDate.minusMonths(1)));
 
-    nextMonthBtn.addActionListener(e -> moveMonthHandler(currentDate.plusMonths(1)));
+    nextMonthBtn.addActionListener(e -> updateAndShowCurrentDate(currentDate.plusMonths(1)));
 
-    todayBtn.addActionListener(e -> moveMonthHandler(LocalDate.now()));
+    todayBtn.addActionListener(e -> updateAndShowCurrentDate(LocalDate.now()));
+
+    dayBtn.addActionListener(e -> dayViewHandler());
+
+    weekBtn.addActionListener(e -> weekViewHandler());
+
+    monthBtn.addActionListener(e -> monthViewHandler());
+
+    agendaBtn.addActionListener(e -> agendaViewHandler());
 
     createEventBtn.addActionListener(e -> createEventPopup());
 
@@ -114,28 +137,29 @@ public class View implements ChangeListener {
     quitBtn.addActionListener(e -> frame.dispose());
 
     /* Add components to containers */
-    titlePanel.add(monthName);
-    titlePanel.add(yearName);
-    titlePanel.add(prevMonthBtn);
-    titlePanel.add(nextMonthBtn);
-    titlePanel.add(todayBtn);
+    topLeftPanel.add(monthName);
+    topLeftPanel.add(yearName);
+    topLeftPanel.add(prevMonthBtn);
+    topLeftPanel.add(nextMonthBtn);
+    topLeftPanel.add(todayBtn);
     
-    leftPanel.add(titlePanel);
-    leftPanel.add(monthView);
-
     topRightPanel.add(dayBtn);
-    topRightPanel.add(WeekBtn);
+    topRightPanel.add(weekBtn);
     topRightPanel.add(monthBtn);
     topRightPanel.add(agendaBtn);
     topRightPanel.add(quitBtn);
+
     bottomRightPanel.add(prevDayBtn);
     bottomRightPanel.add(createEventBtn);
     bottomRightPanel.add(fileBtn);
     bottomRightPanel.add(nextDayBtn);
 
-    rightPanel.add(topRightPanel);
-    rightPanel.add(dayView);
-    rightPanel.add(bottomRightPanel);
+    leftPanel.add(topLeftPanel);
+    leftPanel.add(monthlyCalendarPanel);
+
+    rightPanel.add(topRightPanel, BorderLayout.NORTH);
+    rightPanel.add(scrollPane, BorderLayout.CENTER);
+    rightPanel.add(bottomRightPanel, BorderLayout.SOUTH);
 
     frame.add(leftPanel);
     frame.add(rightPanel);
@@ -148,45 +172,135 @@ public class View implements ChangeListener {
     frame.setVisible(true);
   }
 
-  private void moveDateHandler(int i) {
-    GregorianCalendar cal = this.getCalendar(model);
-    currentDate = currentDate.plusDays(i);
-    cal.add(Calendar.DAY_OF_MONTH, -1);
-    model.updateListeners(cal);
-
-    /* First Day of Month */
-    if(currentDate.getDayOfMonth() == currentDate.getMonth().length(currentDate.isLeapYear())){
-      monthView.removeAll();
-      showMonthlyCalendar(currentDate);
-    }
-    /* Last Day of Month */
-    if(currentDate.getDayOfMonth() == 1){
-      monthView.removeAll();
-      showMonthlyCalendar(currentDate);
-    }
-
-    /* Highlight the date*/
-    highlight(currentDate, lastHighlight);
-    lastHighlight = currentDate.getDayOfMonth();
-
-    currentDateToString(currentDate);
+  /**
+   * It switches the view selection mode to 'day view', then update the content
+   */
+  private void dayViewHandler() {
+    viewStatus = 'd';
+    daysToShow.clear();
+    daysToShow = new ArrayList<>();
+    daysToShow.add(currentDate);
+    
+    showSchedule();
   }
 
-  private void moveMonthHandler(LocalDate c) {
-    currentDate = c;
-    // update title
-    monthName.setText(getMonthAbbreviation(c));
-    yearName.setText(Integer.toString(c.getYear()));
-    // update monthly calendar
-    monthView.removeAll();
-    showMonthlyCalendar(c);
-    model.updateListeners(this.getCalendar(model));
+  /**
+   * This switches the view selection mode to 'week view', then update the content
+   */
+  private void weekViewHandler() {
+    viewStatus = 'w';
+    LocalDate startDate = currentDate.with(WeekFields.of(Locale.US).dayOfWeek(), 1L);
+    LocalDate lastDate = currentDate.with(WeekFields.of(Locale.US).dayOfWeek(), 7L);
+    daysToShow = startDate.datesUntil(lastDate.plusDays(1)).collect(Collectors.toList());
+    
+    showSchedule();
+  }
+
+  /**
+   * This switches the view selection mode to 'month view', then update the content
+   */
+  private void monthViewHandler() {
+    viewStatus = 'm';
+    int currentYear = currentDate.getYear();
+    Month currentMonth = currentDate.getMonth();
+    int lastDateOfMonth = currentMonth.length(currentDate.isLeapYear());
+    LocalDate startDate = LocalDate.of(currentYear, currentMonth, 1);
+    LocalDate lastDate = LocalDate.of(currentYear, currentMonth, lastDateOfMonth);
+    daysToShow = startDate.datesUntil(lastDate.plusDays(1)).collect(Collectors.toList());
+
+    showSchedule();
+  }
+
+  /**
+   * This switches the view selection mode to 'agenda view', then update the content
+   */
+  private void agendaViewHandler() {
+    viewStatus = 'a';
+
+    JFrame agendaFrame = new JFrame();
+    JPanel agendaPanel = new JPanel();
+    JTextField startYearField = new JTextField(10);
+    JTextField startMonthField = new JTextField(10);
+    JTextField startDateField = new JTextField(10);
+    JTextField endYearField = new JTextField(10);
+    JTextField endMonthField = new JTextField(10);
+    JTextField endDateField = new JTextField(10);
+    JButton submitBtn = new JButton("Submit");
+
+    submitBtn.addActionListener(e -> {
+      try {
+        int startYear = Integer.parseInt(startYearField.getText());
+        int startMonth = Integer.parseInt(startMonthField.getText());
+        int startDate = Integer.parseInt(startDateField.getText());
+        int endYear = Integer.parseInt(endYearField.getText());
+        int endMonth = Integer.parseInt(endMonthField.getText());
+        int endDate = Integer.parseInt(endDateField.getText());
+        LocalDate startLocalDate = LocalDate.of(startYear, startMonth, startDate);
+        LocalDate endLocalDate = LocalDate.of(endYear, endMonth, endDate);
+
+        /* Start Date should be Earlier than End Date */
+        if(startLocalDate.isAfter(endLocalDate)) {
+          JOptionPane.showMessageDialog(null, "start date should be after end date");
+        } 
+        else {
+          daysToShow = startLocalDate.datesUntil(endLocalDate.plusDays(1)).collect(Collectors.toList());
+          showSchedule();
+          agendaFrame.dispose();
+        }
+    } catch (NumberFormatException nfe) {
+      JOptionPane.showMessageDialog(null, "Please type numeric value");
+    } catch (DateTimeException dte) {
+      JOptionPane.showMessageDialog(null, "Please type proper input of date formmat");
+    }
+    });
+
+    agendaPanel.add(new JLabel("Year", SwingConstants.CENTER));
+    agendaPanel.add(new JLabel("Month", SwingConstants.CENTER));
+    agendaPanel.add(new JLabel("Date", SwingConstants.CENTER));
+    agendaPanel.add(startYearField);
+    agendaPanel.add(startMonthField);
+    agendaPanel.add(startDateField);
+    agendaPanel.add(endYearField);
+    agendaPanel.add(endMonthField);
+    agendaPanel.add(endDateField);
+    agendaPanel.add(submitBtn);
+
+    agendaFrame.add(agendaPanel);
+
+    agendaPanel.setBorder(new EmptyBorder(BASE_SPACE, BASE_SPACE, BASE_SPACE, BASE_SPACE));
+    agendaPanel.setLayout(new GridLayout(4, 3));
+
+    agendaFrame.setTitle("Load Events From File");
+    agendaFrame.setSize(500, 200);
+    agendaFrame.setLocation(500, 250);
+    agendaFrame.setVisible(true);
+  }
+
+  private void updateAndShowCurrentDate(LocalDate dateToUpdate) {
+    /* Update Current Date */
+    currentDate = dateToUpdate;
+
+    /* Update Title */
+    monthName.setText(getMonthAbbreviation(dateToUpdate));
+    yearName.setText(Integer.toString(dateToUpdate.getYear())); 
+
+    /* Update Monthly Calendar */
+    monthlyCalendarPanel.removeAll();
+    showMonthlyCalendar(dateToUpdate);
 
     /* Highlight the date*/
-    highlight(c, lastHighlight);
-    lastHighlight = c.getDayOfMonth();
+    highlight(dateToUpdate, lastHighlight);
+    lastHighlight = dateToUpdate.getDayOfMonth();
 
-    currentDateToString(c);
+    switch(viewStatus) {
+      case 'd': dayViewHandler(); break;
+      case 'w': weekViewHandler(); break;
+      case 'm': monthViewHandler(); break;
+      case 'a': dayViewHandler(); break;
+      default: break;
+    }
+
+    // currentDateToString(dateToUpdate);
   }
 
   /**
@@ -240,6 +354,7 @@ public class View implements ChangeListener {
           startTimeInLocalTime = "0" + startTimeInLocalTime;
         if(Integer.parseInt(endTimeStr) < 10)
           endTimeInLocalTime = "0" + endTimeInLocalTime;
+
         /* check if time conflicts with another event */
         if (!model.saveEvents(eventNameStr, this.getCalendar(model).toZonedDateTime().toLocalDate(),
             LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
@@ -254,7 +369,8 @@ public class View implements ChangeListener {
           conflictMessage.setVisible(true);
           conflictMessage.pack();
         } 
-        /* Successfully Create Event */
+
+        /* If Successful, Create Event */
         else {
           createFrame.dispose();
           Event event = new Event(eventNameStr, currentDate,
@@ -321,24 +437,64 @@ public class View implements ChangeListener {
     loadFrame.setVisible(true);
   }
 
-  private void dateAndDetails(int o) {
-    String date = currentDate.getMonthValue() + "/" + currentDate.getDayOfMonth();
-    StringBuilder events = new StringBuilder();
-    
-    if (model.getEventMap().containsKey(currentDate)) {
-      ArrayList<Event> list = model.getEventMap().get(currentDate);
-      Collection<Event> nonDuplicateCollection = list.stream()
-          .collect(Collectors.toMap(Event::getName, Function.identity(), (a, b) -> a)).values();
-      List<Event> list1 = new ArrayList<>(nonDuplicateCollection);
-      list1.sort(Comparator.comparing(Event::getStartTime));
-      for (Event event : list1) {
-        events.append(event.getName()).append(" ").append(event.getStartTime()).append(" ").append(event.getEndTime());
-        events.append("\n");
+  private void showSchedule() {
+    contentText.setText("");
+    switch(viewStatus) {
+      case 'd':{
+        String date = currentDate.getMonthValue() + "/" + currentDate.getDayOfMonth();
+        StringBuilder events = new StringBuilder();
+      
+        if (model.getEventMap().containsKey(currentDate)) {
+          ArrayList<Event> list = model.getEventMap().get(currentDate);
+          Collection<Event> nonDuplicateCollection = list.stream()
+              .collect(Collectors.toMap(Event::getName, Function.identity(), (a, b) -> a)).values();
+          List<Event> list1 = new ArrayList<>(nonDuplicateCollection);
+          list1.sort(Comparator.comparing(Event::getStartTime));
+          for (Event event : list1) {
+            events.append(event.getName()).append(" ").append(event.getStartTime()).append(" ").append(event.getEndTime());
+            events.append("\n");
+          }
+        }
+        contentText.append(currentDate.getDayOfWeek().toString() + "   " + date);
+        contentText.append("\n\n");
+        contentText.append(events.toString());
+        break;
+      }
+      case 'w':
+      case 'm':
+      case 'a':{
+        String startDateStr = daysToShow.get(0).toString();
+        String endDateStr = daysToShow.get(daysToShow.size() - 1).toString();
+        contentText.append(startDateStr + "   ~   " + endDateStr + "\n\n");
+
+        for(LocalDate dates: daysToShow) {
+          StringBuilder events = new StringBuilder();
+          String date = dates.getDayOfWeek().toString().substring(0,3) + "   " + 
+                        dates.getMonthValue() + "/" + dates.getDayOfMonth();
+          
+          if (model.getEventMap().containsKey(dates)) {
+            ArrayList<Event> list = model.getEventMap().get(dates);
+            Collection<Event> nonDuplicateCollection = list.stream()
+                .collect(Collectors.toMap(Event::getName, Function.identity(), (a, b) -> a)).values();
+            List<Event> list1 = new ArrayList<>(nonDuplicateCollection);
+            list1.sort(Comparator.comparing(Event::getStartTime));
+            for (Event event : list1) {
+              events.append(event.getName() + " | ");
+            }
+            contentText.append(date);
+            contentText.append("  -  ");
+            contentText.append(events.toString());
+            contentText.append("\n");
+          }
+        }
+        break;
+      }
+      default:{
+        contentText.setText("ERROR: Unknown View Selector");
+        break;
       }
     }
-    dayView.setText(currentDate.getDayOfWeek() + " " + date);
-    dayView.append("\n");
-    dayView.append(events.toString());
+
   }
 
   /**
@@ -361,10 +517,6 @@ public class View implements ChangeListener {
     return date.getMonth().toString().substring(0, 3);
   }
 
-  private void currentDateToString(LocalDate c){
-    System.out.println("Current Date: " + c.toString());
-  }
-  
   /**
    * This function adds JButton, JLabel Components to the JPanel, monthView 
    * and shows month view corresponding to the LocalDate in parameter.
@@ -386,7 +538,7 @@ public class View implements ChangeListener {
     else 
       throw new IllegalArgumentException("Invalid day of week");
 
-    monthView.setLayout(new GridLayout(7, 7));
+    monthlyCalendarPanel.setLayout(new GridLayout(7, 7));
     
     JLabel sunLabel = new JLabel("S", SwingConstants.CENTER);
     JLabel monLabel = new JLabel("M", SwingConstants.CENTER);
@@ -404,23 +556,23 @@ public class View implements ChangeListener {
     friLabel.setFont(new Font("Arial", Font.BOLD, 14));
     satLabel.setFont(new Font("Arial", Font.BOLD, 14));
 
-    monthView.add(sunLabel);
-    monthView.add(monLabel);
-    monthView.add(tueLabel);
-    monthView.add(wedLabel);
-    monthView.add(thuLabel);
-    monthView.add(friLabel);
-    monthView.add(satLabel);
+    monthlyCalendarPanel.add(sunLabel);
+    monthlyCalendarPanel.add(monLabel);
+    monthlyCalendarPanel.add(tueLabel);
+    monthlyCalendarPanel.add(wedLabel);
+    monthlyCalendarPanel.add(thuLabel);
+    monthlyCalendarPanel.add(friLabel);
+    monthlyCalendarPanel.add(satLabel);
 
     for (int i = 0; i < offset; i++) {
       JButton dateBtn = new JButton();
       dateBtn.setEnabled(false);
-      monthView.add(dateBtn);
+      monthlyCalendarPanel.add(dateBtn);
     }
     /* Add Date Buttons */
     for (int i = 1; i <= totalDaysOfMonth; i++) {
       JButton dateBtn = new JButton(Integer.toString(i));
-      monthView.add(dateBtn);
+      monthlyCalendarPanel.add(dateBtn);
 
       /* Date Button Listener */
       dateBtn.addActionListener(e -> {
@@ -429,15 +581,20 @@ public class View implements ChangeListener {
 
           /* Update current date */
           currentDate = LocalDate.of(c.getYear(), c.getMonth(), date);
+          // currentDateToString(currentDate);
 
           /* update content of the date */
-          dateAndDetails(date);
+          switch(viewStatus) {
+            case 'd': dayViewHandler(); break;
+            case 'w': weekViewHandler(); break;
+            case 'm': monthViewHandler(); break;
+            case 'a': dayViewHandler(); break;
+            default: break;
+          }
 
           /* Highlight the date*/
           highlight(currentDate, lastHighlight);
           lastHighlight = date;
-
-          currentDateToString(currentDate);
       });
       daysButtons.put(i, dateBtn);
     }
@@ -446,7 +603,7 @@ public class View implements ChangeListener {
     for (int i = 0; i < remainingDays; i++) {
       JButton dateBtn = new JButton();
       dateBtn.setEnabled(false);
-      monthView.add(dateBtn);
+      monthlyCalendarPanel.add(dateBtn);
     }
   }
 
@@ -459,8 +616,12 @@ public class View implements ChangeListener {
     }    
   }
 
+  /**
+   * When Calendar Model is modified, hence created or loaded from file,
+   * The content textarea will show day view only.
+   */
   @Override
   public void stateChanged(ChangeEvent e) {
-    dateAndDetails(this.getCalendar(model).get(Calendar.DAY_OF_MONTH));
+    dayViewHandler();
   }
 }
