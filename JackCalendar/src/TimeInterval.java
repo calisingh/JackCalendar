@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * TimeInterval is used to check if two events are conflicting.
  *
- * @authors Kunwarpreet, Jooyul, Carrisa
+ * @authors Kunwarpreet, Jooyul, Carissa
  */
 public class TimeInterval {
 	/**
@@ -19,13 +19,14 @@ public class TimeInterval {
 	 * @return boolean isConflicting?
 	 */
 	public static boolean isConflicting(Event event1, Event event2) {
-		if (event1.getDate().equals(event2.getDate())) {
-			return (event1.getStartTime().compareTo(event2.getEndTime()) < 0
-					&& event1.getStartTime().compareTo(event2.getEndTime()) > 0)
-					|| (event1.getEndTime().compareTo(event2.getStartTime()) > 0
-							&& event1.getEndTime().compareTo(event2.getEndTime()) < 0);
+		if (!event1.getDate().equals(event2.getDate())) 
+			return false;
+
+		if ((event1.getStartTime().compareTo(event2.getEndTime()) >= 0) ||
+				(event1.getEndTime().compareTo(event2.getStartTime()) <= 0)) {
+			return false;
 		}
-		return false;
+		return true;
 	}
 
 	public static boolean checkForConflict(Event event, HashMap<LocalDate, ArrayList<Event>> eventList) {
