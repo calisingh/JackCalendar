@@ -88,7 +88,7 @@ public class MyCalendar {
 					(endMonth < 0) 	 || (endMonth > 12) 	||
 					(startHour < 0)  || (startHour > 23) || 
 					(endHour < 0)    || (endHour> 23)){
-					print("Can't Load '" + eventInfo + "' - Invalid format of input");
+					print("Can't Load '" + eventInfo + "' - Invalid format of input ");
 					continue;
 				}
 
