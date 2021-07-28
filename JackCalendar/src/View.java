@@ -30,13 +30,13 @@ public class View implements ChangeListener {
   private List<LocalDate> daysToShow;
 
   /* Variables for GUI */
-  final int WINDOW_WIDTH = 900;
-  final int WINDOW_HEIGHT = 300;
+  final int WINDOW_WIDTH = 910;
+  final int WINDOW_HEIGHT = 320;
   final int BASE_SPACE = 20;
   final int PANEL_WIDTH = (WINDOW_WIDTH - 3 * BASE_SPACE) / 2;
   final int PANEL_HEIGHT = WINDOW_HEIGHT - 2 * BASE_SPACE;
-  final int BTN_WIDTH = 79;
-  final int BTN_HEIGHT = 20;
+  final int BTN_WIDTH = 80;
+  final int BTN_HEIGHT = 25;
   final int CALENDAR_ROW = 6;
   final int CALENDAR_COL = 7;
 
@@ -112,6 +112,9 @@ public class View implements ChangeListener {
     quitBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
     prevDayBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
     nextDayBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    prevMonthBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    nextMonthBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
+    todayBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
     createEventBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
     fileBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
     
@@ -357,21 +360,27 @@ public class View implements ChangeListener {
     }
     });
 
-    agendaPanel.add(new JLabel("Year", SwingConstants.CENTER));
+    agendaPanel.add(new JLabel();
+    agendaPanel.add(new JLabel("Year",  SwingConstants.CENTER));
     agendaPanel.add(new JLabel("Month", SwingConstants.CENTER));
-    agendaPanel.add(new JLabel("Date", SwingConstants.CENTER));
+    agendaPanel.add(new JLabel("Date",  SwingConstants.CENTER));
+    agendaPanel.add(new JLabel("start Date",  SwingConstants.CENTER));
     agendaPanel.add(startYearField);
     agendaPanel.add(startMonthField);
     agendaPanel.add(startDateField);
+    agendaPanel.add(new JLabel("End Date",  SwingConstants.CENTER));
     agendaPanel.add(endYearField);
     agendaPanel.add(endMonthField);
     agendaPanel.add(endDateField);
+    agendaPanel.add(new JLabel());
+    agendaPanel.add(new JLabel());
+    agendaPanel.add(new JLabel());
     agendaPanel.add(submitBtn);
 
     agendaFrame.add(agendaPanel);
 
     agendaPanel.setBorder(new EmptyBorder(BASE_SPACE, BASE_SPACE, BASE_SPACE, BASE_SPACE));
-    agendaPanel.setLayout(new GridLayout(4, 3));
+    agendaPanel.setLayout(new GridLayout(4, 4));
 
     agendaFrame.setTitle("Load Events From File");
     agendaFrame.setSize(500, 200);
@@ -386,6 +395,7 @@ public class View implements ChangeListener {
     JTextField startTime = new JTextField(10);
     JTextField endTime = new JTextField(10);
     JButton saveBtn = new JButton("SAVE");
+    JButton cancelBtn = new JButton("CANCEL");
     
     saveBtn.addActionListener(e -> {
 
@@ -410,9 +420,10 @@ public class View implements ChangeListener {
         else if( startHour >= endHour) {
           JOptionPane.showMessageDialog(null, "Start time shoule be greater than end time");
         }
+        /* Valid User Input */
         else {
           if(startHour < 10) startTimeInLocalTime = "0" + startTimeInLocalTime;
-          if(endHour < 10)   endTimeInLocalTime   = "0" + endTimeInLocalTime;
+          if(endHour   < 10) endTimeInLocalTime   = "0" + endTimeInLocalTime;
           Event newEvent = new Event(eventNameStr, currentDate,
               LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
               LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME));
@@ -433,6 +444,8 @@ public class View implements ChangeListener {
       }
     });
 
+    cancelBtn.addActionListener(e -> createFrame.dispose());
+
     createPanel.add(new JLabel("Event\t\t"));
     createPanel.add(eventName);
     createPanel.add(new JLabel("Start Hour (0 ~ 23)"));
@@ -440,13 +453,14 @@ public class View implements ChangeListener {
     createPanel.add(new JLabel("End Hour (0 ~ 23)"));
     createPanel.add(endTime);
     createPanel.add(saveBtn);
+    createPanel.add(cancelBtn);
 
+    createFrame.add(createPanel);
     createPanel.setLayout(new BoxLayout(createPanel, BoxLayout.PAGE_AXIS));
     createPanel.setBorder(new EmptyBorder(BASE_SPACE, BASE_SPACE, BASE_SPACE, BASE_SPACE));
-    createFrame.add(createPanel);
 
     createFrame.setTitle("Create New Event");
-    createFrame.setSize(250, 220);
+    createFrame.setSize(250, 250);
     createFrame.setLocation(650, 250);
     createFrame.setVisible(true);
 
