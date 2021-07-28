@@ -1,5 +1,3 @@
-import javafx.util.Pair;
-
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.io.File;
