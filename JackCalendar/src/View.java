@@ -60,7 +60,7 @@ public class View implements ChangeListener {
     currentDate = LocalDate.now();
     daysToShow = new ArrayList<>();
     daysToShow.add(currentDate);
-    String today = currentDate.getDayOfWeek().toString() + " " + 
+    String today = currentDate.getDayOfWeek().toString() + "   " + 
                     currentDate.getMonthValue() + "/" + 
                     currentDate.getDayOfMonth();
     viewStatus = 'd'; // Default View Status: day view 
@@ -213,7 +213,9 @@ public class View implements ChangeListener {
     contentText.setText("");
     switch(viewStatus) {
       case 'd':{
-        String date = currentDate.getMonthValue() + "/" + currentDate.getDayOfMonth();
+        String dateStr = currentDate.getDayOfWeek().toString() + "   " + 
+                      currentDate.getMonthValue() + "/" + 
+                      currentDate.getDayOfMonth();
         StringBuilder events = new StringBuilder();
       
         if (model.getEventMap().containsKey(currentDate)) {
@@ -227,7 +229,7 @@ public class View implements ChangeListener {
             events.append("\n");
           }
         }
-        contentText.append(currentDate.getDayOfWeek().toString() + "   " + date);
+        contentText.append(dateStr);
         contentText.append("\n\n");
         contentText.append(events.toString());
         break;
@@ -237,7 +239,7 @@ public class View implements ChangeListener {
       case 'a':{
         String startDateStr = daysToShow.get(0).toString();
         String endDateStr = daysToShow.get(daysToShow.size() - 1).toString();
-        contentText.append(startDateStr + "   ~   " + endDateStr + "\n\n");
+        contentText.append("[" + startDateStr + "]   ~   [" + endDateStr + "]\n\n");
 
         for(LocalDate dates: daysToShow) {
           StringBuilder events = new StringBuilder();
@@ -251,11 +253,11 @@ public class View implements ChangeListener {
             List<Event> list1 = new ArrayList<>(nonDuplicateCollection);
             list1.sort(Comparator.comparing(Event::getStartTime));
             for (Event event : list1) {
-              events.append(event.getName() + " | ");
+              events.append(" | " + event.getName());
             }
             contentText.append(date);
-            contentText.append("  -  ");
-            contentText.append(events.toString());
+            contentText.append(" :  ");
+            contentText.append(events.toString() + " |");
             contentText.append("\n");
           }
         }

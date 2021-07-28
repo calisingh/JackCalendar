@@ -38,6 +38,24 @@ public class MyCalendar {
 	}
 
 	/**
+	 * returns the GregorianCalendar from the model.
+	 *
+	 * @param listener
+	 */
+	public GregorianCalendar getGregorianCalendar() {
+		return gregorianCalendar;
+	}
+
+	/**
+	 * return the event map.
+	 *
+	 * @return
+	 */
+	public HashMap<LocalDate, ArrayList<Event>> getEventMap() {
+		return events;
+	}
+
+	/**
 	 * Used to read and load all the existing events from the file. It reads the
 	 * file in a particular format and generate events from it and store them in the
 	 * appropriate map.
@@ -130,22 +148,6 @@ public class MyCalendar {
 
 	}
 
-	private String getDayOfWeek(String detail) {
-		HashMap<String, String> val = new HashMap<>();
-		val.put("s", "SUNDAY");
-		val.put("m", "MONDAY");
-		val.put("t", "TUESDAY");
-		val.put("w", "WEDNESDAY");
-		val.put("r", "THURSDAY");
-		val.put("f", "FRIDAY");
-		val.put("a", "SATURDAY");
-		return val.get(detail.toLowerCase());
-	}
-
-	private void print(Object x) {
-		System.out.println(x);
-	}
-
 	/**
 	 * attaches the listener to the list of listener
 	 *
@@ -153,15 +155,6 @@ public class MyCalendar {
 	 */
 	public void attach(ChangeListener listener) {
 		listeners.add(listener);
-	}
-
-	/**
-	 * returns the GregorianCalendar from the model.
-	 *
-	 * @param listener
-	 */
-	public GregorianCalendar getGregorianCalendar() {
-		return gregorianCalendar;
 	}
 
 	/**
@@ -184,12 +177,24 @@ public class MyCalendar {
 		}
 	}
 
-	/**
-	 * return the event map.
-	 *
-	 * @return
-	 */
-	public HashMap<LocalDate, ArrayList<Event>> getEventMap() {
-		return events;
+	private String getDayOfWeek(String detail) {
+		switch(detail.toLowerCase()) {
+			case "s": return "SUNDAY";
+			case "m": return "MONDAY";
+			case "t": return "TUESDAY";
+			case "w": return "WEDNESDAY";
+			case "r": return "THURSDAY";
+			case "f": return "FRIDAY";
+			case "a": return "SATURDAY";
+			default:  {
+				System.out.println("Unknown Day of Week: " + detail);
+				return null;
+			}
+		}
 	}
+
+	private void print(Object x) {
+		System.out.println(x);
+	}
+
 }
