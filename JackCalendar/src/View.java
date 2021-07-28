@@ -383,8 +383,7 @@ public class View implements ChangeListener {
     JTextField startTime = new JTextField(10);
     JTextField endTime = new JTextField(10);
     JButton saveBtn = new JButton("SAVE");
-    JLabel to = new JLabel("to");
-    saveBtn.setSize(50, 50);
+    // saveBtn.setSize(50, 50);
     
     saveBtn.addActionListener(e -> {
       String eventNameStr = eventName.getText();
@@ -446,16 +445,19 @@ public class View implements ChangeListener {
     });
 
     createFrame.add(new JLabel("Event"));
+    createFrame.add(new JLabel("Event"));
+    createFrame.add(new JLabel("Event"));
+    createFrame.add(new JLabel("Event"));
     createFrame.add(eventName);
     createFrame.add(startTime);
-    createFrame.add(to);
+    createFrame.add(new JLabel("to"));
     createFrame.add(endTime);
     createFrame.add(saveBtn);
 
     createFrame.setTitle("Create New Event");
     createFrame.setSize(500, 200);
     createFrame.setLocation(500, 250);
-    createFrame.setLayout(new FlowLayout());
+    createFrame.setLayout(new GridLayout(3, 4));
     createFrame.setVisible(true);
 
   }
