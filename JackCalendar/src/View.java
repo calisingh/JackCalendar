@@ -379,6 +379,7 @@ public class View implements ChangeListener {
 
   private void createEventPopup() {
     JFrame createFrame = new JFrame();
+    JPanel createPanel = new JPanel();
     JTextField eventName = new JTextField(10);
     JTextField startTime = new JTextField(10);
     JTextField endTime = new JTextField(10);
@@ -444,20 +445,21 @@ public class View implements ChangeListener {
       }
     });
 
-    createFrame.add(new JLabel("Event"));
-    createFrame.add(new JLabel("Event"));
-    createFrame.add(new JLabel("Event"));
-    createFrame.add(new JLabel("Event"));
-    createFrame.add(eventName);
-    createFrame.add(startTime);
-    createFrame.add(new JLabel("to"));
-    createFrame.add(endTime);
-    createFrame.add(saveBtn);
+    createPanel.add(new JLabel("Event\t\t"));
+    createPanel.add(eventName);
+    createPanel.add(new JLabel("Start Hour (0 ~ 23)"));
+    createPanel.add(startTime);
+    createPanel.add(new JLabel("End Hour (0 ~ 23)"));
+    createPanel.add(endTime);
+    createPanel.add(saveBtn);
+
+    createPanel.setLayout(new BoxLayout(createPanel, BoxLayout.PAGE_AXIS));
+    createPanel.setBorder(new EmptyBorder(BASE_SPACE, BASE_SPACE, BASE_SPACE, BASE_SPACE));
+    createFrame.add(createPanel);
 
     createFrame.setTitle("Create New Event");
-    createFrame.setSize(500, 200);
-    createFrame.setLocation(500, 250);
-    createFrame.setLayout(new GridLayout(3, 4));
+    createFrame.setSize(250, 220);
+    createFrame.setLocation(650, 250);
     createFrame.setVisible(true);
 
   }
