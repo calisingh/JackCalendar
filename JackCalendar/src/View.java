@@ -386,7 +386,6 @@ public class View implements ChangeListener {
     JTextField startTime = new JTextField(10);
     JTextField endTime = new JTextField(10);
     JButton saveBtn = new JButton("SAVE");
-    // saveBtn.setSize(50, 50);
     
     saveBtn.addActionListener(e -> {
       String eventNameStr = eventName.getText();
@@ -412,37 +411,27 @@ public class View implements ChangeListener {
           JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should be between 0 and 23");
       }
       /* check if the start time is greater than the end time */
-      else if( Integer.parseInt(startTimeStr) > Integer.parseInt(endTimeStr)) {
-        JOptionPane.showMessageDialog(null, "Please check your start or end time\n start time shoule be greater than end time");
+      else if( Integer.parseInt(startTimeStr) >= Integer.parseInt(endTimeStr)) {
+        JOptionPane.showMessageDialog(null, "Start time shoule be greater than end time");
       }
       else {
         if(Integer.parseInt(startTimeStr) < 10)
           startTimeInLocalTime = "0" + startTimeInLocalTime;
         if(Integer.parseInt(endTimeStr) < 10)
           endTimeInLocalTime = "0" + endTimeInLocalTime;
+        Event newEvent = new Event(eventNameStr, currentDate,
+            LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
+            LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME));
 
         /* check if time conflicts with another event */
-        if (!model.saveEvents(eventNameStr, this.getCalendar(model).toZonedDateTime().toLocalDate(),
-            LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
-            LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME)).getValue()) {
-          JFrame conflictMessage = new JFrame();
-          conflictMessage.setLayout(new GridLayout(2, 0));
-          JLabel jLabel = new JLabel("Event Time is conflicting! Please try again.");
-          conflictMessage.add(jLabel);
-          JButton goBack = new JButton("Go Back");
-          goBack.addActionListener(e2 -> conflictMessage.dispose());
-          conflictMessage.add(goBack);
-          conflictMessage.setVisible(true);
-          conflictMessage.pack();
+        if (model.isConflicts(newEvent)) {
+          JOptionPane.showMessageDialog(null, "Event Time is conflicting! Please try again.");
         } 
 
         /* If Successful, Create Event */
         else {
+          model.updateEvent(currentDate, newEvent);
           createFrame.dispose();
-          Event event = new Event(eventNameStr, currentDate,
-              LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
-              LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME));
-          model.updateEvent(currentDate, event);
         }
       }
     });

@@ -20,27 +20,21 @@ import java.util.stream.Collectors;
  */
 public class MyCalendar {
 	private final HashMap<LocalDate, ArrayList<Event>> events;
-	private final HashMap<String, HashMap<LocalDate, ArrayList<Event>>> recurringEvents;
 	private final ArrayList<ChangeListener> listeners;
 	private GregorianCalendar gregorianCalendar;
 
 	/**
 	 * Constructor for the MyCalendar class. It initializes the following: HashMap
-	 * of events HashMap of recurringEvents
-	 *
-	 * @param sc scanner
+	 * of events, ArrayList of ChangeListener, and gregorianCalendar
 	 */
 	public MyCalendar() {
 		this.events = new HashMap<>();
-		this.recurringEvents = new HashMap<>();
 		this.listeners = new ArrayList<>();
 		this.gregorianCalendar = new GregorianCalendar();
 	}
 
 	/**
 	 * returns the GregorianCalendar from the model.
-	 *
-	 * @param listener
 	 */
 	public GregorianCalendar getGregorianCalendar() {
 		return gregorianCalendar;
@@ -48,8 +42,10 @@ public class MyCalendar {
 
 	/**
 	 * return the event map.
-	 *
-	 * @return
+	 * key - LocalDate
+	 * value - ArrayList of Event
+	 * 
+	 * @return events HashMap
 	 */
 	public HashMap<LocalDate, ArrayList<Event>> getEventMap() {
 		return events;
@@ -95,8 +91,9 @@ public class MyCalendar {
 				if(dofList.contains(c.getDayOfWeek().toString())) {
 					LocalTime start = LocalTime.parse(startTime, DateTimeFormatter.ISO_LOCAL_TIME);
 					LocalTime end = LocalTime.parse(endTime, DateTimeFormatter.ISO_LOCAL_TIME);
-					Event event = new Event(name, c, start, end);
-					updateEvent(c, event);
+					Event newEvent = new Event(name, c, start, end);
+					if (!isConflicts(newEvent))
+						updateEvent(c, newEvent);
 				}
 			}
 
@@ -108,44 +105,25 @@ public class MyCalendar {
 		}
 	}
 
-	public Pair<Event, Boolean> saveEvents(String name, LocalDate parsedDate, LocalTime parsedStartTime,
-			LocalTime parsedEndTime) {
-		Event event = new Event(name, parsedDate, parsedStartTime, parsedEndTime);
-		if ((event.getStartTime() == null || event.getEndTime() == null)) {
-			print("Event not created!. Time cannot be null");
-			return new Pair<>(null, false);
-		}
-		if (event.getStartTime().compareTo(event.getEndTime()) > 0) {
-			print("Event not created!");
-			print("Start time has to be before the end time!");
-			return new Pair<>(null, false);
-		}
-		Pair<Event, Boolean> conflicts = new Pair<>(null, false);
-		for (Map.Entry<LocalDate, ArrayList<Event>> entry : events.entrySet()) {
-			for (Event e : entry.getValue()) {
-				if (TimeInterval.isConflicting(e, event)) {
-					conflicts = new Pair<>(e, true);
-				}
+	/**
+	 * checks if the new event conflicts in time with the existing events
+	 * 
+	 * @param New Event
+	 */
+	public Boolean isConflicts(Event newEvent) {
+		/* No event existing on that date */
+		if(events.get(newEvent.getDate()) == null)
+			return false;
+
+		/* check if conflicts */
+		for(Event e: events.get(newEvent.getDate())){
+			if(TimeInterval.isConflicting(newEvent, e)) {
+				print(newEvent.getName() + " not added due to time conflict with " + 
+											e.getName() + " - " + newEvent.getDate());
+				return true;
 			}
 		}
-		for (Map.Entry<String, HashMap<LocalDate, ArrayList<Event>>> entry : recurringEvents.entrySet()) {
-			for (Map.Entry<LocalDate, ArrayList<Event>> entry2 : entry.getValue().entrySet()) {
-				for (Event e : entry2.getValue()) {
-					if (TimeInterval.isConflicting(e, event)) {
-						conflicts = new Pair<>(e, true);
-					}
-				}
-
-			}
-		}
-		if (conflicts.getValue()) {
-			print("ERROR");
-			System.out.println("\" " + event.getName() + " \"" + " cannot be created. It conflicts with " + "\" "
-					+ conflicts.getKey().getName() + " \"");
-			return new Pair<>(null, false);
-		}
-		return new Pair<>(event, true);
-
+		return false;
 	}
 
 	/**
@@ -177,8 +155,12 @@ public class MyCalendar {
 		}
 	}
 
-	private String getDayOfWeek(String detail) {
-		switch(detail.toLowerCase()) {
+	/**
+	 * converts the first letter of day of week to the full name of it
+	 * @param dayOfWeekChar String
+	 */
+	private String getDayOfWeek(String dayOfWeekChar) {
+		switch(dayOfWeekChar.toLowerCase()) {
 			case "s": return "SUNDAY";
 			case "m": return "MONDAY";
 			case "t": return "TUESDAY";
@@ -187,7 +169,7 @@ public class MyCalendar {
 			case "f": return "FRIDAY";
 			case "a": return "SATURDAY";
 			default:  {
-				System.out.println("Unknown Day of Week: " + detail);
+				System.out.println("Unknown Day of Week: " + dayOfWeekChar);
 				return null;
 			}
 		}
@@ -196,5 +178,4 @@ public class MyCalendar {
 	private void print(Object x) {
 		System.out.println(x);
 	}
-
 }
