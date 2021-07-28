@@ -388,51 +388,48 @@ public class View implements ChangeListener {
     JButton saveBtn = new JButton("SAVE");
     
     saveBtn.addActionListener(e -> {
-      String eventNameStr = eventName.getText();
-      String startTimeStr = startTime.getText();
-      String endTimeStr = endTime.getText();
-      String startTimeInLocalTime = startTimeStr + ":00";
-      String endTimeInLocalTime = endTimeStr + ":00";
 
-      /* Check if the event name is empty */
-      if (eventNameStr.isEmpty()) {
-        JOptionPane.showMessageDialog(null, "Please check the name of the event\n It should not be empty");
-      }
-      /* check if the event time is empty */
-      else if (startTimeStr.isEmpty() || endTimeStr.isEmpty()) {
-        JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should not be empty");
-      } 
-      /* check if the time inputs are integers */
-      else if (!isNumeric(startTimeStr) || !isNumeric(endTimeStr)) {
-        JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should be a numeric value");
-      }
-      /* check if the time inputs are numbers between 0 and 23 */
-      else if( Integer.parseInt(startTimeStr) < 0 || Integer.parseInt(startTimeStr) > 23 || Integer.parseInt(endTimeStr) < 0 || Integer.parseInt(endTimeStr) > 23) {
-          JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should be between 0 and 23");
-      }
-      /* check if the start time is greater than the end time */
-      else if( Integer.parseInt(startTimeStr) >= Integer.parseInt(endTimeStr)) {
-        JOptionPane.showMessageDialog(null, "Start time shoule be greater than end time");
-      }
-      else {
-        if(Integer.parseInt(startTimeStr) < 10)
-          startTimeInLocalTime = "0" + startTimeInLocalTime;
-        if(Integer.parseInt(endTimeStr) < 10)
-          endTimeInLocalTime = "0" + endTimeInLocalTime;
-        Event newEvent = new Event(eventNameStr, currentDate,
-            LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
-            LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME));
+      try {
+        String eventNameStr = eventName.getText();
+        String startTimeStr = startTime.getText();
+        String endTimeStr = endTime.getText();
+        int startHour = Integer.parseInt(startTimeStr);
+        int endHour = Integer.parseInt(endTimeStr);
+        String startTimeInLocalTime = startTimeStr + ":00";
+        String endTimeInLocalTime = endTimeStr + ":00";
 
-        /* check if time conflicts with another event */
-        if (model.isConflicts(newEvent)) {
-          JOptionPane.showMessageDialog(null, "Event Time is conflicting! Please try again.");
-        } 
-
-        /* If Successful, Create Event */
-        else {
-          model.updateEvent(currentDate, newEvent);
-          createFrame.dispose();
+        /* Check if the event name is empty */
+        if (eventNameStr.isEmpty()) {
+          JOptionPane.showMessageDialog(null, "Please check the name of the event\n It should not be empty");
         }
+        /* check if the time inputs are numbers between 0 and 23 */
+        else if( startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23) {
+            JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should be between 0 and 23");
+        }
+        /* check if the start time is greater than the end time */
+        else if( startHour >= endHour) {
+          JOptionPane.showMessageDialog(null, "Start time shoule be greater than end time");
+        }
+        else {
+          if(startHour < 10) startTimeInLocalTime = "0" + startTimeInLocalTime;
+          if(endHour < 10)   endTimeInLocalTime   = "0" + endTimeInLocalTime;
+          Event newEvent = new Event(eventNameStr, currentDate,
+              LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
+              LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME));
+
+          /* check if time conflicts with another event */
+          if (model.isConflicts(newEvent)) {
+            JOptionPane.showMessageDialog(null, "Event Time is conflicting! Please try again.");
+          } 
+
+          /* If Successful, Create Event */
+          else {
+            model.updateEvent(currentDate, newEvent);
+            createFrame.dispose();
+          } 
+        }
+      } catch (NumberFormatException nfe) {
+        JOptionPane.showMessageDialog(null, "Please check the format");
       }
     });
 
@@ -496,6 +493,9 @@ public class View implements ChangeListener {
     loadFrame.setVisible(true);
   }
   
+  /**
+   * highlights current view selection
+   */
   private void highlightBtn(JButton btn) {
     dayBtn.setBorder(UIManager.getBorder("Button.border"));
     weekBtn.setBorder(UIManager.getBorder("Button.border"));
@@ -622,15 +622,6 @@ public class View implements ChangeListener {
       dateBtn.setEnabled(false);
       monthlyCalendarPanel.add(dateBtn);
     }
-  }
-
-  private static boolean isNumeric(String str) {
-    try {  
-      Integer.parseInt(str);  
-      return true;
-    } catch(NumberFormatException e){  
-      return false;  
-    }    
   }
 
   /**
