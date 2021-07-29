@@ -22,14 +22,25 @@ import java.util.stream.Collectors;
  * @authors Kunwarpreet, Jooyul, Carissa
  */
 public class View implements ChangeListener {
-  private LocalDate currentDate;
+  /* Instance Variables */
   private final MyCalendar model;
-  private final HashMap<Integer, JButton> daysButtons = new HashMap<>();
-  private int lastHighlight;
-  private char viewStatus;
+  private LocalDate currentDate;
   private List<LocalDate> daysToShow;
+  private char viewStatus;
+  private int lastHighlighted;
 
   /* Variables for GUI */
+  private final JPanel monthlyCalendarPanel;
+  private final JTextArea contentText;
+  private JLabel monthName = new JLabel("", SwingConstants.CENTER);
+  private JLabel yearName = new JLabel("", SwingConstants.CENTER);
+  private final HashMap<Integer, JButton> daysButtons = new HashMap<>();
+  private JButton dayBtn = new JButton("Day");
+  private JButton weekBtn = new JButton("Week");
+  private JButton monthBtn = new JButton("Month");
+  private JButton agendaBtn = new JButton("Agenda");
+
+  /* Variabls for Dimension */
   final int WINDOW_WIDTH = 910;
   final int WINDOW_HEIGHT = 320;
   final int BASE_SPACE = 20;
@@ -39,16 +50,7 @@ public class View implements ChangeListener {
   final int BTN_HEIGHT = 25;
   final int CALENDAR_ROW = 6;
   final int CALENDAR_COL = 7;
-
-  private final JPanel monthlyCalendarPanel;
-  private final JTextArea contentText;
-  private JLabel monthName = new JLabel("", SwingConstants.CENTER);
-  private JLabel yearName = new JLabel("", SwingConstants.CENTER);
-  JButton dayBtn = new JButton("Day");
-  JButton weekBtn = new JButton("Week");
-  JButton monthBtn = new JButton("Month");
-  JButton agendaBtn = new JButton("Agenda");
-
+  
   /**
    * Constructor
    */
@@ -56,7 +58,7 @@ public class View implements ChangeListener {
 
     /* Initialize Default Variables */
     this.model = model;
-    lastHighlight = this.getCalendar(model).get(Calendar.DAY_OF_MONTH);
+    lastHighlighted = model.getGregorianCalendar().get(Calendar.DAY_OF_MONTH);
     currentDate = LocalDate.now();
     daysToShow = new ArrayList<>();
     daysToShow.add(currentDate);
@@ -122,9 +124,9 @@ public class View implements ChangeListener {
     
     /* Create Buttons and Highlight today */
     showMonthlyCalendar(currentDate);
-    highlightBtn(dayBtn);
-    highlight(currentDate, lastHighlight);
-    lastHighlight = currentDate.getDayOfMonth();
+    highlightViewBtn(dayBtn);
+    highlightDaysBtn(currentDate, lastHighlighted);
+    lastHighlighted = currentDate.getDayOfMonth();
 
     /* Action Listener for Buttons */
     prevDayBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.minusDays(1)));
@@ -205,8 +207,8 @@ public class View implements ChangeListener {
     showMonthlyCalendar(dateToUpdate);
 
     /* Highlight the date*/
-    highlight(dateToUpdate, lastHighlight);
-    lastHighlight = dateToUpdate.getDayOfMonth();
+    highlightDaysBtn(dateToUpdate, lastHighlighted);
+    lastHighlighted = dateToUpdate.getDayOfMonth();
 
     switch(viewStatus) {
       case 'd': dayViewHandler(); break;
@@ -299,7 +301,7 @@ public class View implements ChangeListener {
     daysToShow.add(currentDate);
 
     /* Highlight view selection button */
-    highlightBtn(dayBtn);
+    highlightViewBtn(dayBtn);
     
     /* Update contents */
     showSchedule();
@@ -318,7 +320,7 @@ public class View implements ChangeListener {
     daysToShow = startDate.datesUntil(lastDate.plusDays(1)).collect(Collectors.toList());
 
     /* Highlight view selection button */
-    highlightBtn(weekBtn);
+    highlightViewBtn(weekBtn);
     
     /* Update contents */
     showSchedule();
@@ -340,7 +342,7 @@ public class View implements ChangeListener {
     daysToShow = startDate.datesUntil(lastDate.plusDays(1)).collect(Collectors.toList());
 
     /* Highlight view selection button */
-    highlightBtn(monthBtn);
+    highlightViewBtn(monthBtn);
 
     /* Update contents */
     showSchedule();
@@ -384,7 +386,7 @@ public class View implements ChangeListener {
           daysToShow = startLocalDate.datesUntil(endLocalDate.plusDays(1)).collect(Collectors.toList());
 
           /* Highlight view selection button */
-          highlightBtn(agendaBtn);
+          highlightViewBtn(agendaBtn);
 
           /* Update contents */
           showSchedule();
@@ -553,7 +555,7 @@ public class View implements ChangeListener {
   /**
    * highlights current view selection
    */
-  private void highlightBtn(JButton btn) {
+  private void highlightViewBtn(JButton btn) {
     dayBtn.setBorder(UIManager.getBorder("Button.border"));
     weekBtn.setBorder(UIManager.getBorder("Button.border"));
     monthBtn.setBorder(UIManager.getBorder("Button.border"));
@@ -566,18 +568,9 @@ public class View implements ChangeListener {
    *
    * @param i
    */
-  public void highlight(LocalDate c, int lastHighlight) {
+  public void highlightDaysBtn(LocalDate c, int lastHighlight) {
     daysButtons.get(lastHighlight).setBorder(UIManager.getBorder("Button.border"));
     daysButtons.get(c.getDayOfMonth()).setBorder(new LineBorder(Color.pink, 3, true));
-  }
-
-  /**
-   * return the GregorianCalendar of the current model.
-   * @param model
-   * @return
-   */
-  private GregorianCalendar getCalendar(MyCalendar model) {
-    return model.getGregorianCalendar();
   }
 
   /**
@@ -651,24 +644,24 @@ public class View implements ChangeListener {
       /* Date Button Listener */
       dateBtn.addActionListener(e -> {
         /* Show content in day view */
-          int date = Integer.parseInt(dateBtn.getText());
+        int date = Integer.parseInt(dateBtn.getText());
 
-          /* Update current date */
-          currentDate = LocalDate.of(c.getYear(), c.getMonth(), date);
-          // currentDateToString(currentDate);
+        /* Update current date */
+        currentDate = LocalDate.of(c.getYear(), c.getMonth(), date);
+        // currentDateToString(currentDate);
 
-          /* update content of the date */
-          switch(viewStatus) {
-            case 'd': dayViewHandler(); break;
-            case 'w': weekViewHandler(); break;
-            case 'm': monthViewHandler(); break;
-            case 'a': dayViewHandler(); break;
-            default: break;
-          }
+        /* update content of the date */
+        switch(viewStatus) {
+          case 'd': dayViewHandler(); break;
+          case 'w': weekViewHandler(); break;
+          case 'm': monthViewHandler(); break;
+          case 'a': dayViewHandler(); break;
+          default: break;
+        }
 
-          /* Highlight the date*/
-          highlight(currentDate, lastHighlight);
-          lastHighlight = date;
+        /* Highlight the date*/
+        highlightDaysBtn(currentDate, lastHighlighted);
+        lastHighlighted = date;
       });
       daysButtons.put(i, dateBtn);
     }

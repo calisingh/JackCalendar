@@ -7,7 +7,6 @@ public class SimpleCalendarTester {
 	 * 
 	 * @param args
 	 */
-	final static String filename = "Events.txt";
 
 	public static void main(String[] args) {
 		MyCalendar calender = new MyCalendar();
