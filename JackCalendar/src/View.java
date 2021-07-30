@@ -8,9 +8,7 @@ import java.io.FileNotFoundException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.Month;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.WeekFields;
 import java.util.List;
 import java.util.*;
 import java.util.function.Function;
@@ -26,8 +24,8 @@ public class View implements ChangeListener {
   private final MyCalendar model;
   private LocalDate currentDate;
   private List<LocalDate> daysToShow;
-  private char viewStatus;
   private int lastHighlighted;
+  private ViewStrategy viewStrategy;
 
   /* Variables for GUI */
   private final JPanel monthlyCalendarPanel;
@@ -65,7 +63,7 @@ public class View implements ChangeListener {
     String today = currentDate.getDayOfWeek().toString() + "   " + 
                     currentDate.getMonthValue() + "/" + 
                     currentDate.getDayOfMonth();
-    viewStatus = 'd'; // Default View Status: day view 
+    viewStrategy = new DayViewStrategy(); // Default View Status: day view 
 
     /** Initialize GUI components **/
     final JFrame frame = new JFrame();
@@ -139,13 +137,13 @@ public class View implements ChangeListener {
 
     todayBtn.addActionListener(e -> updateAndHighlightCurrentDate(LocalDate.now()));
 
-    dayBtn.addActionListener(e -> dayViewHandler());
+    dayBtn.addActionListener(e -> contentsBtnHandler(new DayViewStrategy()));
 
-    weekBtn.addActionListener(e -> weekViewHandler());
+    weekBtn.addActionListener(e -> contentsBtnHandler(new WeekViewStrategy()));
 
-    monthBtn.addActionListener(e -> monthViewHandler());
+    monthBtn.addActionListener(e -> contentsBtnHandler(new MonthViewStrategy()));
 
-    agendaBtn.addActionListener(e -> agendaViewHandler());
+    agendaBtn.addActionListener(e -> contentsBtnHandler(new AgendaViewStrategy()));
 
     createEventBtn.addActionListener(e -> createEventPopup());
 
@@ -210,11 +208,11 @@ public class View implements ChangeListener {
     highlightDaysBtn(dateToUpdate, lastHighlighted);
     lastHighlighted = dateToUpdate.getDayOfMonth();
 
-    switch(viewStatus) {
-      case 'd': dayViewHandler(); break;
-      case 'w': weekViewHandler(); break;
-      case 'm': monthViewHandler(); break;
-      case 'a': dayViewHandler(); break;
+    switch(viewStrategy.getStrategy()) {
+      case 'd': contentsBtnHandler(new DayViewStrategy()); break;
+      case 'w': contentsBtnHandler(new WeekViewStrategy()); break;
+      case 'm': contentsBtnHandler(new MonthViewStrategy()); break;
+      case 'a': contentsBtnHandler(new AgendaViewStrategy()); break;
       default: break;
     }
   }
@@ -225,7 +223,7 @@ public class View implements ChangeListener {
   private void showSchedule() {
     /* Clear Text Area */
     contentText.setText("");
-    switch(viewStatus) {
+    switch(viewStrategy.getStrategy()) {
       /* Day View */
       case 'd':{
         String dateStr = currentDate.getDayOfWeek().toString() + "   " + 
@@ -289,73 +287,41 @@ public class View implements ChangeListener {
   }
 
   /**
-   * It switches the view selection mode to 'day view', then update the content
+   * It switches the view selection modes to new strategy passed through a parameter, 
+   * highlights buttons, and updates the the content depending on the strategy.
+   * 
+   * @param newStrategy ViewStrategy
+   * <li> <code>DayViewStrategy</code></li>
+   * <li> <code>WeekViewStrategy</code></li>
+   * <li> <code>MonthViewStrategy</code></li>
+   * <li> <code>AgendaViewStrategy</code></li>
    */
-  private void dayViewHandler() {
+  private void contentsBtnHandler(ViewStrategy newStrategy) {
     /* Update View Selection Mode */
-    viewStatus = 'd';
+    setViewStrategy(newStrategy);
 
     /* Update ArrayList<LocalDate> Days To Show */
-    daysToShow.clear();
-    daysToShow = new ArrayList<>();
-    daysToShow.add(currentDate);
+    if(viewStrategy.getStrategy() == 'a') {
+      AgendaViewStrategyHandler();
+      return;
+    } else {
+      daysToShow =  viewStrategy.updateDaysToShow(currentDate);
+    }
 
     /* Highlight view selection button */
-    highlightViewBtn(dayBtn);
+    switch(viewStrategy.getStrategy()) {
+      case 'd': highlightViewBtn(dayBtn); break;
+      case 'w': highlightViewBtn(weekBtn); break;
+      case 'm': highlightViewBtn(monthBtn); break;
+      case 'a': highlightViewBtn(agendaBtn); break;
+      default: break;
+    }
     
     /* Update contents */
     showSchedule();
   }
 
-  /**
-   * This switches the view selection mode to 'week view', then update the content
-   */
-  private void weekViewHandler() {
-    /* Update View Selection Mode */
-    viewStatus = 'w';
-
-    /* Update ArrayList<LocalDate> Days To Show */
-    LocalDate startDate = currentDate.with(WeekFields.of(Locale.US).dayOfWeek(), 1L);
-    LocalDate lastDate = currentDate.with(WeekFields.of(Locale.US).dayOfWeek(), 7L);
-    daysToShow = startDate.datesUntil(lastDate.plusDays(1)).collect(Collectors.toList());
-
-    /* Highlight view selection button */
-    highlightViewBtn(weekBtn);
-    
-    /* Update contents */
-    showSchedule();
-  }
-
-  /**
-   * This switches the view selection mode to 'month view', then update the content
-   */
-  private void monthViewHandler() {
-    /* Update View Selection Mode */
-    viewStatus = 'm';
-
-    /* Update ArrayList<LocalDate> Days To Show */
-    int currentYear = currentDate.getYear();
-    Month currentMonth = currentDate.getMonth();
-    int lastDateOfMonth = currentMonth.length(currentDate.isLeapYear());
-    LocalDate startDate = LocalDate.of(currentYear, currentMonth, 1);
-    LocalDate lastDate = LocalDate.of(currentYear, currentMonth, lastDateOfMonth);
-    daysToShow = startDate.datesUntil(lastDate.plusDays(1)).collect(Collectors.toList());
-
-    /* Highlight view selection button */
-    highlightViewBtn(monthBtn);
-
-    /* Update contents */
-    showSchedule();
-  }
-
-  /**
-   * This switches the view selection mode to 'agenda view', then update the content
-   * This also pop ups a new frame to set period of time to search
-   */
-  private void agendaViewHandler() {
-    /* Update View Selection Mode */
-    viewStatus = 'a';
-
+  private void AgendaViewStrategyHandler() {
     JFrame agendaFrame = new JFrame();
     JPanel agendaPanel = new JPanel();
     JTextField startYearField = new JTextField(10);
@@ -387,17 +353,18 @@ public class View implements ChangeListener {
 
           /* Highlight view selection button */
           highlightViewBtn(agendaBtn);
-
+          
           /* Update contents */
           showSchedule();
-          
+
           agendaFrame.dispose();
+          return;
         }
-    } catch (NumberFormatException nfe) {
-      JOptionPane.showMessageDialog(null, "Please type numeric value");
-    } catch (DateTimeException dte) {
-      JOptionPane.showMessageDialog(null, "Please type proper input of date formmat");
-    }
+      } catch (NumberFormatException nfe) {
+        JOptionPane.showMessageDialog(null, "Please type numeric value");
+      } catch (DateTimeException dte) {
+        JOptionPane.showMessageDialog(null, "Please type proper input of date formmat");
+      }
     });
 
     agendaPanel.add(new JLabel());
@@ -419,10 +386,10 @@ public class View implements ChangeListener {
 
     agendaFrame.add(agendaPanel);
 
-    agendaPanel.setBorder(new EmptyBorder(BASE_SPACE, BASE_SPACE, BASE_SPACE, BASE_SPACE));
+    agendaPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
     agendaPanel.setLayout(new GridLayout(4, 4));
 
-    agendaFrame.setTitle("Load Events From File");
+    agendaFrame.setTitle("Set Period");
     agendaFrame.setSize(500, 200);
     agendaFrame.setLocation(500, 250);
     agendaFrame.setVisible(true);
@@ -513,6 +480,7 @@ public class View implements ChangeListener {
    * load recurring events from file
    */
   private void loadFileHandler() {
+    System.out.println("LOAD FILE HANDLER START");
     JFrame loadFrame = new JFrame();
     JPanel loadPanel = new JPanel();
     JLabel label = new JLabel("File Path");
@@ -524,12 +492,14 @@ public class View implements ChangeListener {
 
     loadBtn.addActionListener(e -> {
       try {
+        System.out.println("LOAD BTN ACTION LISTENER IN");
         /* Load */
         String fileName = "JackCalendar/data/" + fileNameField.getText();
         model.loadAndUpdateEvents(fileName);
         loadFrame.dispose();
-      } 
-      catch (FileNotFoundException fnf) {
+
+        System.out.println("LOAD BTN ACTION LISTENER OUT");
+      } catch (FileNotFoundException fnf) {
         JOptionPane.showMessageDialog(null, "The file is not found");
       }
     });
@@ -650,12 +620,11 @@ public class View implements ChangeListener {
         currentDate = LocalDate.of(c.getYear(), c.getMonth(), date);
         // currentDateToString(currentDate);
 
-        /* update content of the date */
-        switch(viewStatus) {
-          case 'd': dayViewHandler(); break;
-          case 'w': weekViewHandler(); break;
-          case 'm': monthViewHandler(); break;
-          case 'a': dayViewHandler(); break;
+        switch(viewStrategy.getStrategy()) {
+          case 'd': contentsBtnHandler(new DayViewStrategy()); break;
+          case 'w': contentsBtnHandler(new WeekViewStrategy()); break;
+          case 'm': contentsBtnHandler(new MonthViewStrategy()); break;
+          case 'a': contentsBtnHandler(new AgendaViewStrategy()); break;
           default: break;
         }
 
@@ -675,11 +644,26 @@ public class View implements ChangeListener {
   }
 
   /**
-   * When Calendar Model is modified, hence created or loaded from file,
-   * The content textarea will show day view only.
+   * Strategy Pattern
+   * 
+   * @newStrategy ViewStrategy
+   */
+  private void setViewStrategy(ViewStrategy newStrategy) {
+    viewStrategy = newStrategy;
+  }
+
+  /**
+   * This updates the content when Calendar Model is updated, 
+   * when events are created or loaded from file
    */
   @Override
   public void stateChanged(ChangeEvent e) {
-    dayViewHandler();
+    switch(viewStrategy.getStrategy()) {
+      case 'a':
+      case 'd': contentsBtnHandler(new DayViewStrategy()); break;
+      case 'w': contentsBtnHandler(new WeekViewStrategy()); break;
+      case 'm': contentsBtnHandler(new MonthViewStrategy()); break;
+      default: break;
+    }
   }
 }
