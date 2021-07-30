@@ -5,48 +5,65 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-public interface ViewStrategy 
-{
+/**
+ * Interface to view strategy as required per requirements and guidelines
+ */
+public interface ViewStrategy {
   public List<LocalDate> updateDaysToShow(LocalDate currentDate);
+
   public char getStrategy();
 }
 
-/* Day View Strategy */
-class DayViewStrategy implements ViewStrategy 
-{
+/*
+ * Day View Strategy
+ */
+class DayViewStrategy implements ViewStrategy {
   public List<LocalDate> updateDaysToShow(LocalDate currentDate) {
 
-    /* Initialize New ArrayList */
+    /*
+     * Initializes New ArrayList
+     */
     List<LocalDate> daysToShow = new ArrayList<LocalDate>();
 
-    /* Update ArrayList<LocalDate> Days To Show */
+    /*
+     * Updates ArrayList<LocalDate> Days To Show
+     */
     daysToShow.add(currentDate);
-
     return daysToShow;
   }
 
-  public char getStrategy() { return 'd'; }
+  public char getStrategy() {
+    return 'd';
+  }
 }
 
-/* Week View Strategy */
-class WeekViewStrategy implements ViewStrategy 
-{
+/*
+ * Week View Strategy
+ */
+class WeekViewStrategy implements ViewStrategy {
   public List<LocalDate> updateDaysToShow(LocalDate currentDate) {
-    /* Update ArrayList<LocalDate> Days To Show */
+    /*
+     * Update ArrayList<LocalDate> Days To Show
+     */
     LocalDate startDate = currentDate.with(WeekFields.of(Locale.US).dayOfWeek(), 1L);
     LocalDate lastDate = currentDate.with(WeekFields.of(Locale.US).dayOfWeek(), 7L);
-    
+
     return startDate.datesUntil(lastDate.plusDays(1)).collect(Collectors.toList());
   }
 
-  public char getStrategy() { return 'w'; }
+  public char getStrategy() {
+    return 'w';
+  }
 }
 
-/* Month View Strategy */
-class MonthViewStrategy implements ViewStrategy 
-{
+/*
+ * Month View Strategy
+ */
+class MonthViewStrategy implements ViewStrategy {
   public List<LocalDate> updateDaysToShow(LocalDate currentDate) {
-    /* Update ArrayList<LocalDate> Days To Show */
+    /*
+     * Update ArrayList<LocalDate> Days To Show
+     */
     int currentYear = currentDate.getYear();
     Month currentMonth = currentDate.getMonth();
     int lastDateOfMonth = currentMonth.length(currentDate.isLeapYear());
@@ -56,14 +73,20 @@ class MonthViewStrategy implements ViewStrategy
     return startDate.datesUntil(lastDate.plusDays(1)).collect(Collectors.toList());
   }
 
-  public char getStrategy() { return 'm'; }
+  public char getStrategy() {
+    return 'm';
+  }
 }
 
-/* Agenda View Strategy */
+/*
+ * Agenda View Strategy
+ */
 class AgendaViewStrategy implements ViewStrategy {
   public List<LocalDate> updateDaysToShow(LocalDate currentDate) {
     return null;
   }
 
-  public char getStrategy() { return 'a'; }
+  public char getStrategy() {
+    return 'a';
+  }
 }

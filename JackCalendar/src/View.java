@@ -15,19 +15,20 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * View for the application.
+ * View for the application - containg GUI components (ie. Jpanel, JTextArea,
+ * JLabel, etc.)
  *
  * @authors Kunwarpreet, Jooyul, Carissa
  */
 public class View implements ChangeListener {
-  /* Instance Variables */
+  // Instance Variables
   private final MyCalendar model;
   private LocalDate currentDate;
   private List<LocalDate> daysToShow;
   private int lastHighlighted;
   private ViewStrategy viewStrategy;
 
-  /* Variables for GUI */
+  // Variables for the GUI
   private final JPanel monthlyCalendarPanel;
   private final JTextArea contentText;
   private JLabel monthName = new JLabel("", SwingConstants.CENTER);
@@ -38,7 +39,7 @@ public class View implements ChangeListener {
   private JButton monthBtn = new JButton("Month");
   private JButton agendaBtn = new JButton("Agenda");
 
-  /* Variabls for Dimension */
+  // Variables to initialize for the dimensions
   final int WINDOW_WIDTH = 910;
   final int WINDOW_HEIGHT = 320;
   final int BASE_SPACE = 20;
@@ -48,36 +49,35 @@ public class View implements ChangeListener {
   final int BTN_HEIGHT = 25;
   final int CALENDAR_ROW = 6;
   final int CALENDAR_COL = 7;
-  
-  /**
-   * Constructor
-   */
+
+  // View Constructor
   public View(MyCalendar model) {
 
-    /* Initialize Default Variables */
+    // Initializes the variables
     this.model = model;
     lastHighlighted = model.getGregorianCalendar().get(Calendar.DAY_OF_MONTH);
     currentDate = LocalDate.now();
     daysToShow = new ArrayList<>();
     daysToShow.add(currentDate);
-    String today = currentDate.getDayOfWeek().toString() + "   " + 
-                    currentDate.getMonthValue() + "/" + 
-                    currentDate.getDayOfMonth();
-    viewStrategy = new DayViewStrategy(); // Default View Status: day view 
+    String today = currentDate.getDayOfWeek().toString() + "   " + currentDate.getMonthValue() + "/"
+        + currentDate.getDayOfMonth();
+    viewStrategy = new DayViewStrategy(); // Default View Status: day view
 
-    /** Initialize GUI components **/
+    // Initializes GUI components
     final JFrame frame = new JFrame();
-    /* panels */
+    // Panels for the Calendar GUI
     JPanel leftPanel = new JPanel();
     JPanel rightPanel = new JPanel();
     JPanel topLeftPanel = new JPanel();
     JPanel topRightPanel = new JPanel();
     JPanel bottomRightPanel = new JPanel();
-    /* labels */
+
+    // Labels on the Calendar GUI
     monthlyCalendarPanel = new JPanel();
     contentText = new JTextArea(10, 33);
     JScrollPane scrollPane = new JScrollPane(contentText);
-    /* Buttons */
+
+    // Buttons on the Calendar GUI
     JButton prevMonthBtn = new JButton("<");
     JButton nextMonthBtn = new JButton(">");
     JButton prevDayBtn = new JButton("<");
@@ -87,18 +87,21 @@ public class View implements ChangeListener {
     JButton quitBtn = new JButton("Quit");
     JButton fileBtn = new JButton("Load File");
 
-    /* set up panels */
+    // The following sets up panels - such as their space, scroll bars (both
+    // vertical and horizontal), width, and grid layout for the actual calendar
     leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
-    leftPanel.setBorder(new EmptyBorder(BASE_SPACE,BASE_SPACE,BASE_SPACE,BASE_SPACE/2));
+    leftPanel.setBorder(new EmptyBorder(BASE_SPACE, BASE_SPACE, BASE_SPACE, BASE_SPACE / 2));
     rightPanel.setLayout(new BorderLayout());
-    rightPanel.setBorder(new EmptyBorder(BASE_SPACE/2,BASE_SPACE/2,BASE_SPACE, BASE_SPACE));
+    rightPanel.setBorder(new EmptyBorder(BASE_SPACE / 2, BASE_SPACE / 2, BASE_SPACE, BASE_SPACE));
     topLeftPanel.setLayout(new GridLayout(1, 0));
-    topLeftPanel.setBorder(new EmptyBorder(0, BASE_SPACE, BASE_SPACE/2, BASE_SPACE));
+    topLeftPanel.setBorder(new EmptyBorder(0, BASE_SPACE, BASE_SPACE / 2, BASE_SPACE));
     scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
     scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     monthlyCalendarPanel.setLayout(new GridLayout(7, 7));
-    
-    /* set up components (JTextArea allows to have multiple lines (multiple events)) */
+
+    // This sets up the components to show the events, both when reading in from
+    // input text and displaying the current events that fall on that day, week,
+    // month, or year
     monthName.setText(getMonthAbbreviation(currentDate));
     yearName.setText(Integer.toString(currentDate.getYear()));
     contentText.setText(today);
@@ -117,38 +120,27 @@ public class View implements ChangeListener {
     todayBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
     createEventBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
     fileBtn.setPreferredSize(new Dimension(BTN_WIDTH, BTN_HEIGHT));
-    
+
     quitBtn.setForeground(Color.RED);
-    
-    /* Create Buttons and Highlight today */
+
+    // Creates button and highlights the current date
     showMonthlyCalendar(currentDate);
     highlightViewBtn(dayBtn);
     highlightDaysBtn(currentDate, lastHighlighted);
     lastHighlighted = currentDate.getDayOfMonth();
 
-    /* Action Listener for Buttons */
+    // These are the action listeners for the buttons to streamline the navigation process
     prevDayBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.minusDays(1)));
-
     nextDayBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.plusDays(1)));
-
     prevMonthBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.minusMonths(1)));
-
     nextMonthBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.plusMonths(1)));
-
     todayBtn.addActionListener(e -> updateAndHighlightCurrentDate(LocalDate.now()));
-
     dayBtn.addActionListener(e -> contentsBtnHandler(new DayViewStrategy()));
-
     weekBtn.addActionListener(e -> contentsBtnHandler(new WeekViewStrategy()));
-
     monthBtn.addActionListener(e -> contentsBtnHandler(new MonthViewStrategy()));
-
     agendaBtn.addActionListener(e -> contentsBtnHandler(new AgendaViewStrategy()));
-
     createEventBtn.addActionListener(e -> createEventPopup());
-
     fileBtn.addActionListener(e -> loadFileHandler());
-
     quitBtn.addActionListener(e -> frame.dispose());
 
     /* Add components to containers */
@@ -157,7 +149,7 @@ public class View implements ChangeListener {
     topLeftPanel.add(prevMonthBtn);
     topLeftPanel.add(nextMonthBtn);
     topLeftPanel.add(todayBtn);
-    
+
     topRightPanel.add(dayBtn);
     topRightPanel.add(weekBtn);
     topRightPanel.add(monthBtn);
@@ -181,7 +173,8 @@ public class View implements ChangeListener {
 
     frame.setLayout(new GridLayout(0, 2));
     frame.setTitle("JACK CALENDAR");
-    frame.setLocation(320, 200);;
+    frame.setLocation(320, 200);
+    ;
     frame.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.setVisible(true);
@@ -198,22 +191,31 @@ public class View implements ChangeListener {
 
     /* Update Title */
     monthName.setText(getMonthAbbreviation(dateToUpdate));
-    yearName.setText(Integer.toString(dateToUpdate.getYear())); 
+    yearName.setText(Integer.toString(dateToUpdate.getYear()));
 
     /* Update Monthly Calendar */
     monthlyCalendarPanel.removeAll();
     showMonthlyCalendar(dateToUpdate);
 
-    /* Highlight the date*/
+    /* Highlight the date */
     highlightDaysBtn(dateToUpdate, lastHighlighted);
     lastHighlighted = dateToUpdate.getDayOfMonth();
 
-    switch(viewStrategy.getStrategy()) {
-      case 'd': contentsBtnHandler(new DayViewStrategy()); break;
-      case 'w': contentsBtnHandler(new WeekViewStrategy()); break;
-      case 'm': contentsBtnHandler(new MonthViewStrategy()); break;
-      case 'a': contentsBtnHandler(new AgendaViewStrategy()); break;
-      default: break;
+    switch (viewStrategy.getStrategy()) {
+      case 'd':
+        contentsBtnHandler(new DayViewStrategy());
+        break;
+      case 'w':
+        contentsBtnHandler(new WeekViewStrategy());
+        break;
+      case 'm':
+        contentsBtnHandler(new MonthViewStrategy());
+        break;
+      case 'a':
+        contentsBtnHandler(new AgendaViewStrategy());
+        break;
+      default:
+        break;
     }
   }
 
@@ -223,14 +225,13 @@ public class View implements ChangeListener {
   private void showSchedule() {
     /* Clear Text Area */
     contentText.setText("");
-    switch(viewStrategy.getStrategy()) {
+    switch (viewStrategy.getStrategy()) {
       /* Day View */
-      case 'd':{
-        String dateStr = currentDate.getDayOfWeek().toString() + "   " + 
-                      currentDate.getMonthValue() + "/" + 
-                      currentDate.getDayOfMonth();
+      case 'd': {
+        String dateStr = currentDate.getDayOfWeek().toString() + "   " + currentDate.getMonthValue() + "/"
+            + currentDate.getDayOfMonth();
         StringBuilder events = new StringBuilder();
-      
+
         if (model.getEventMap().containsKey(currentDate)) {
           ArrayList<Event> list = model.getEventMap().get(currentDate);
           Collection<Event> nonDuplicateCollection = list.stream()
@@ -238,7 +239,8 @@ public class View implements ChangeListener {
           List<Event> list1 = new ArrayList<>(nonDuplicateCollection);
           list1.sort(Comparator.comparing(Event::getStartTime));
           for (Event event : list1) {
-            events.append(event.getName()).append(" ").append(event.getStartTime()).append(" ").append(event.getEndTime());
+            events.append(event.getName()).append(" ").append(event.getStartTime()).append(" ")
+                .append(event.getEndTime());
             events.append("\n");
           }
         }
@@ -251,16 +253,16 @@ public class View implements ChangeListener {
       /* Week View, Month View, Agenda View */
       case 'w':
       case 'm':
-      case 'a':{
+      case 'a': {
         String startDateStr = daysToShow.get(0).toString();
         String endDateStr = daysToShow.get(daysToShow.size() - 1).toString();
         contentText.append("[" + startDateStr + "]   ~   [" + endDateStr + "]\n\n");
 
-        for(LocalDate dates: daysToShow) {
+        for (LocalDate dates : daysToShow) {
           StringBuilder events = new StringBuilder();
-          String date = dates.getDayOfWeek().toString().substring(0,3) + "   " + 
-                        dates.getMonthValue() + "/" + dates.getDayOfMonth();
-          
+          String date = dates.getDayOfWeek().toString().substring(0, 3) + "   " + dates.getMonthValue() + "/"
+              + dates.getDayOfMonth();
+
           if (model.getEventMap().containsKey(dates)) {
             ArrayList<Event> list = model.getEventMap().get(dates);
             Collection<Event> nonDuplicateCollection = list.stream()
@@ -279,7 +281,7 @@ public class View implements ChangeListener {
         }
         break;
       }
-      default:{
+      default: {
         contentText.setText("ERROR: Unknown View Selector");
         break;
       }
@@ -287,36 +289,46 @@ public class View implements ChangeListener {
   }
 
   /**
-   * It switches the view selection modes to new strategy passed through a parameter, 
-   * highlights buttons, and updates the the content depending on the strategy.
+   * It switches the view selection modes to new strategy passed through a
+   * parameter, highlights buttons, and updates the the content depending on the
+   * strategy.
    * 
    * @param newStrategy ViewStrategy
-   * <li> <code>DayViewStrategy</code></li>
-   * <li> <code>WeekViewStrategy</code></li>
-   * <li> <code>MonthViewStrategy</code></li>
-   * <li> <code>AgendaViewStrategy</code></li>
+   *                    <li><code>DayViewStrategy</code></li>
+   *                    <li><code>WeekViewStrategy</code></li>
+   *                    <li><code>MonthViewStrategy</code></li>
+   *                    <li><code>AgendaViewStrategy</code></li>
    */
   private void contentsBtnHandler(ViewStrategy newStrategy) {
     /* Update View Selection Mode */
     setViewStrategy(newStrategy);
 
     /* Update ArrayList<LocalDate> Days To Show */
-    if(viewStrategy.getStrategy() == 'a') {
+    if (viewStrategy.getStrategy() == 'a') {
       AgendaViewStrategyHandler();
       return;
     } else {
-      daysToShow =  viewStrategy.updateDaysToShow(currentDate);
+      daysToShow = viewStrategy.updateDaysToShow(currentDate);
     }
 
     /* Highlight view selection button */
-    switch(viewStrategy.getStrategy()) {
-      case 'd': highlightViewBtn(dayBtn); break;
-      case 'w': highlightViewBtn(weekBtn); break;
-      case 'm': highlightViewBtn(monthBtn); break;
-      case 'a': highlightViewBtn(agendaBtn); break;
-      default: break;
+    switch (viewStrategy.getStrategy()) {
+      case 'd':
+        highlightViewBtn(dayBtn);
+        break;
+      case 'w':
+        highlightViewBtn(weekBtn);
+        break;
+      case 'm':
+        highlightViewBtn(monthBtn);
+        break;
+      case 'a':
+        highlightViewBtn(agendaBtn);
+        break;
+      default:
+        break;
     }
-    
+
     /* Update contents */
     showSchedule();
   }
@@ -344,16 +356,15 @@ public class View implements ChangeListener {
         LocalDate endLocalDate = LocalDate.of(endYear, endMonth, endDate);
 
         /* Start Date should be Earlier than End Date */
-        if(startLocalDate.isAfter(endLocalDate)) {
+        if (startLocalDate.isAfter(endLocalDate)) {
           JOptionPane.showMessageDialog(null, "start date should be after end date");
-        } 
-        else {
+        } else {
           /* Update ArrayList<LocalDate> Days To Show */
           daysToShow = startLocalDate.datesUntil(endLocalDate.plusDays(1)).collect(Collectors.toList());
 
           /* Highlight view selection button */
           highlightViewBtn(agendaBtn);
-          
+
           /* Update contents */
           showSchedule();
 
@@ -368,14 +379,14 @@ public class View implements ChangeListener {
     });
 
     agendaPanel.add(new JLabel());
-    agendaPanel.add(new JLabel("Year",  SwingConstants.CENTER));
+    agendaPanel.add(new JLabel("Year", SwingConstants.CENTER));
     agendaPanel.add(new JLabel("Month", SwingConstants.CENTER));
-    agendaPanel.add(new JLabel("Date",  SwingConstants.CENTER));
-    agendaPanel.add(new JLabel("start Date",  SwingConstants.CENTER));
+    agendaPanel.add(new JLabel("Date", SwingConstants.CENTER));
+    agendaPanel.add(new JLabel("start Date", SwingConstants.CENTER));
     agendaPanel.add(startYearField);
     agendaPanel.add(startMonthField);
     agendaPanel.add(startDateField);
-    agendaPanel.add(new JLabel("End Date",  SwingConstants.CENTER));
+    agendaPanel.add(new JLabel("End Date", SwingConstants.CENTER));
     agendaPanel.add(endYearField);
     agendaPanel.add(endMonthField);
     agendaPanel.add(endDateField);
@@ -406,7 +417,6 @@ public class View implements ChangeListener {
     JTextField endTime = new JTextField(10);
     JButton saveBtn = new JButton("SAVE");
     JButton cancelBtn = new JButton("CANCEL");
-    
 
     saveBtn.addActionListener(e -> {
       try {
@@ -423,17 +433,19 @@ public class View implements ChangeListener {
           JOptionPane.showMessageDialog(null, "Please check the name of the event\n It should not be empty");
         }
         /* check if the time inputs are numbers between 0 and 23 */
-        else if( startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23) {
-            JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should be between 0 and 23");
+        else if (startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23) {
+          JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should be between 0 and 23");
         }
         /* check if the start time is greater than the end time */
-        else if( startHour >= endHour) {
+        else if (startHour >= endHour) {
           JOptionPane.showMessageDialog(null, "Start time shoule be greater than end time");
         }
         /* Valid User Input */
         else {
-          if(startHour < 10) startTimeInLocalTime = "0" + startTimeInLocalTime;
-          if(endHour   < 10) endTimeInLocalTime   = "0" + endTimeInLocalTime;
+          if (startHour < 10)
+            startTimeInLocalTime = "0" + startTimeInLocalTime;
+          if (endHour < 10)
+            endTimeInLocalTime = "0" + endTimeInLocalTime;
           Event newEvent = new Event(eventNameStr, currentDate,
               LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
               LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME));
@@ -441,13 +453,13 @@ public class View implements ChangeListener {
           /* check if time conflicts with another event */
           if (model.isConflicts(newEvent)) {
             JOptionPane.showMessageDialog(null, "Event Time is conflicting! Please try again.");
-          } 
+          }
 
           /* If Successful, Create Event */
           else {
             model.updateEvent(currentDate, newEvent);
             createFrame.dispose();
-          } 
+          }
         }
       } catch (NumberFormatException nfe) {
         JOptionPane.showMessageDialog(null, "Please check the format");
@@ -521,7 +533,7 @@ public class View implements ChangeListener {
     loadFrame.setLocation(500, 250);
     loadFrame.setVisible(true);
   }
-  
+
   /**
    * highlights current view selection
    */
@@ -544,9 +556,10 @@ public class View implements ChangeListener {
   }
 
   /**
-   * January - Jan. / February - Feb. / March - Mar. / April - Apr. / 
-   * May - May / June - Jun. / July - Jul. / August - Aug. / 
-   * September - Sep. / October - Oct. / November - Nov. / December - Dec.
+   * January - Jan. / February - Feb. / March - Mar. / April - Apr. / May - May /
+   * June - Jun. / July - Jul. / August - Aug. / September - Sep. / October - Oct.
+   * / November - Nov. / December - Dec.
+   * 
    * @param date Local Date
    * @return String of Month Abbreviations
    */
@@ -555,8 +568,9 @@ public class View implements ChangeListener {
   }
 
   /**
-   * This function adds JButton, JLabel Components to the JPanel, monthView 
-   * and shows month view corresponding to the LocalDate in parameter.
+   * This function adds JButton, JLabel Components to the JPanel, monthView and
+   * shows month view corresponding to the LocalDate in parameter.
+   * 
    * @param c LocalDate
    */
   private void showMonthlyCalendar(LocalDate c) {
@@ -565,18 +579,25 @@ public class View implements ChangeListener {
     String firstDayOfMonth = LocalDate.of(c.getYear(), c.getMonth(), 1).getDayOfWeek().name();
 
     /* offset depends on the first day of the first week */
-    if      (firstDayOfMonth == "SUNDAY")     offset = 0;
-    else if (firstDayOfMonth == "MONDAY")     offset = 1;
-    else if (firstDayOfMonth == "TUESDAY")    offset = 2;
-    else if (firstDayOfMonth == "WEDNESDAY")  offset = 3;
-    else if (firstDayOfMonth == "THURSDAY")   offset = 4;
-    else if (firstDayOfMonth == "FRIDAY")     offset = 5;
-    else if (firstDayOfMonth == "SATURDAY")   offset = 6;
-    else 
+    if (firstDayOfMonth == "SUNDAY")
+      offset = 0;
+    else if (firstDayOfMonth == "MONDAY")
+      offset = 1;
+    else if (firstDayOfMonth == "TUESDAY")
+      offset = 2;
+    else if (firstDayOfMonth == "WEDNESDAY")
+      offset = 3;
+    else if (firstDayOfMonth == "THURSDAY")
+      offset = 4;
+    else if (firstDayOfMonth == "FRIDAY")
+      offset = 5;
+    else if (firstDayOfMonth == "SATURDAY")
+      offset = 6;
+    else
       throw new IllegalArgumentException("Invalid day of week");
 
     monthlyCalendarPanel.setLayout(new GridLayout(7, 7));
-    
+
     JLabel sunLabel = new JLabel("S", SwingConstants.CENTER);
     JLabel monLabel = new JLabel("M", SwingConstants.CENTER);
     JLabel tueLabel = new JLabel("T", SwingConstants.CENTER);
@@ -620,15 +641,24 @@ public class View implements ChangeListener {
         currentDate = LocalDate.of(c.getYear(), c.getMonth(), date);
         // currentDateToString(currentDate);
 
-        switch(viewStrategy.getStrategy()) {
-          case 'd': contentsBtnHandler(new DayViewStrategy()); break;
-          case 'w': contentsBtnHandler(new WeekViewStrategy()); break;
-          case 'm': contentsBtnHandler(new MonthViewStrategy()); break;
-          case 'a': contentsBtnHandler(new AgendaViewStrategy()); break;
-          default: break;
+        switch (viewStrategy.getStrategy()) {
+          case 'd':
+            contentsBtnHandler(new DayViewStrategy());
+            break;
+          case 'w':
+            contentsBtnHandler(new WeekViewStrategy());
+            break;
+          case 'm':
+            contentsBtnHandler(new MonthViewStrategy());
+            break;
+          case 'a':
+            contentsBtnHandler(new AgendaViewStrategy());
+            break;
+          default:
+            break;
         }
 
-        /* Highlight the date*/
+        /* Highlight the date */
         highlightDaysBtn(currentDate, lastHighlighted);
         lastHighlighted = date;
       });
@@ -653,17 +683,24 @@ public class View implements ChangeListener {
   }
 
   /**
-   * This updates the content when Calendar Model is updated, 
-   * when events are created or loaded from file
+   * This updates the content when Calendar Model is updated, when events are
+   * created or loaded from file
    */
   @Override
   public void stateChanged(ChangeEvent e) {
-    switch(viewStrategy.getStrategy()) {
+    switch (viewStrategy.getStrategy()) {
       case 'a':
-      case 'd': contentsBtnHandler(new DayViewStrategy()); break;
-      case 'w': contentsBtnHandler(new WeekViewStrategy()); break;
-      case 'm': contentsBtnHandler(new MonthViewStrategy()); break;
-      default: break;
+      case 'd':
+        contentsBtnHandler(new DayViewStrategy());
+        break;
+      case 'w':
+        contentsBtnHandler(new WeekViewStrategy());
+        break;
+      case 'm':
+        contentsBtnHandler(new MonthViewStrategy());
+        break;
+      default:
+        break;
     }
   }
 }

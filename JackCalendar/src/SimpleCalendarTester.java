@@ -5,7 +5,7 @@ public class SimpleCalendarTester {
 	/**
 	 * Main for testing the application.
 	 * 
-	 * @param args
+	 * @param args - Argument passed into the main method to test application
 	 */
 
 	public static void main(String[] args) {
