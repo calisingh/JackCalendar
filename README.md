@@ -1,4 +1,4 @@
-# Summer 2021 Project Description: Calendar
+# Summer 2021 Project: Calendar
 
 ### Instructor: Dr. Kim
 
