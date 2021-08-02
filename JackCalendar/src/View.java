@@ -129,7 +129,8 @@ public class View implements ChangeListener {
     highlightDaysBtn(currentDate, lastHighlighted);
     lastHighlighted = currentDate.getDayOfMonth();
 
-    // These are the action listeners for the buttons to streamline the navigation process
+    // These are the action listeners for the buttons to streamline the navigation
+    // process
     prevDayBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.minusDays(1)));
     nextDayBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.plusDays(1)));
     prevMonthBtn.addActionListener(e -> updateAndHighlightCurrentDate(currentDate.minusMonths(1)));
@@ -143,7 +144,7 @@ public class View implements ChangeListener {
     fileBtn.addActionListener(e -> loadFileHandler());
     quitBtn.addActionListener(e -> frame.dispose());
 
-    /* Add components to containers */
+    // Adds components to containers
     topLeftPanel.add(monthName);
     topLeftPanel.add(yearName);
     topLeftPanel.add(prevMonthBtn);
@@ -181,23 +182,23 @@ public class View implements ChangeListener {
   }
 
   /**
-   * update current date to the date passed through the parameter
+   * Updates current date to the date passed through the parameter
    * 
    * @param dateToUpdate LocalDate
    */
   private void updateAndHighlightCurrentDate(LocalDate dateToUpdate) {
-    /* Update Current Date */
+    // Update Current Local Date
     currentDate = dateToUpdate;
 
-    /* Update Title */
+    // Updates Title
     monthName.setText(getMonthAbbreviation(dateToUpdate));
     yearName.setText(Integer.toString(dateToUpdate.getYear()));
 
-    /* Update Monthly Calendar */
+    // Updates Monthly Calendar
     monthlyCalendarPanel.removeAll();
     showMonthlyCalendar(dateToUpdate);
 
-    /* Highlight the date */
+    // Highlights the date
     highlightDaysBtn(dateToUpdate, lastHighlighted);
     lastHighlighted = dateToUpdate.getDayOfMonth();
 
@@ -220,13 +221,13 @@ public class View implements ChangeListener {
   }
 
   /**
-   * Shows the schedules based on the view selection status.
+   * Shows the schedule based on the view selection status.
    */
   private void showSchedule() {
-    /* Clear Text Area */
+    // Clears Text Area
     contentText.setText("");
     switch (viewStrategy.getStrategy()) {
-      /* Day View */
+      // Case d - shows Day View
       case 'd': {
         String dateStr = currentDate.getDayOfWeek().toString() + "   " + currentDate.getMonthValue() + "/"
             + currentDate.getDayOfMonth();
@@ -244,13 +245,13 @@ public class View implements ChangeListener {
             events.append("\n");
           }
         }
-        /* Set new text */
+        // Sets new text
         contentText.append(dateStr);
         contentText.append("\n\n");
         contentText.append(events.toString());
         break;
       }
-      /* Week View, Month View, Agenda View */
+      // Shows Week View, Month View, Agenda View
       case 'w':
       case 'm':
       case 'a': {
@@ -289,9 +290,9 @@ public class View implements ChangeListener {
   }
 
   /**
-   * It switches the view selection modes to new strategy passed through a
-   * parameter, highlights buttons, and updates the the content depending on the
-   * strategy.
+   * The following switches the view selection modes to the new strategy passed
+   * through a parameter, highlights buttons, and updates the the content
+   * depending on the strategy.
    * 
    * @param newStrategy ViewStrategy
    *                    <li><code>DayViewStrategy</code></li>
@@ -300,10 +301,10 @@ public class View implements ChangeListener {
    *                    <li><code>AgendaViewStrategy</code></li>
    */
   private void contentsBtnHandler(ViewStrategy newStrategy) {
-    /* Update View Selection Mode */
+    // Updated View Selection Mode
     setViewStrategy(newStrategy);
 
-    /* Update ArrayList<LocalDate> Days To Show */
+    // Updates ArrayList<LocalDate> Days To Show
     if (viewStrategy.getStrategy() == 'a') {
       AgendaViewStrategyHandler();
       return;
@@ -311,7 +312,7 @@ public class View implements ChangeListener {
       daysToShow = viewStrategy.updateDaysToShow(currentDate);
     }
 
-    /* Highlight view selection button */
+    // Highlights view selection button
     switch (viewStrategy.getStrategy()) {
       case 'd':
         highlightViewBtn(dayBtn);
@@ -329,7 +330,7 @@ public class View implements ChangeListener {
         break;
     }
 
-    /* Update contents */
+    // Updates contents
     showSchedule();
   }
 
@@ -355,17 +356,17 @@ public class View implements ChangeListener {
         LocalDate startLocalDate = LocalDate.of(startYear, startMonth, startDate);
         LocalDate endLocalDate = LocalDate.of(endYear, endMonth, endDate);
 
-        /* Start Date should be Earlier than End Date */
+        // Make sure start date should be earlier than end Date */
         if (startLocalDate.isAfter(endLocalDate)) {
           JOptionPane.showMessageDialog(null, "start date should be after end date");
         } else {
-          /* Update ArrayList<LocalDate> Days To Show */
+          // Updates ArrayList<LocalDate> Days To Show
           daysToShow = startLocalDate.datesUntil(endLocalDate.plusDays(1)).collect(Collectors.toList());
 
-          /* Highlight view selection button */
+          // Highlights view selection button
           highlightViewBtn(agendaBtn);
 
-          /* Update contents */
+          // Updates contents
           showSchedule();
 
           agendaFrame.dispose();
@@ -428,19 +429,19 @@ public class View implements ChangeListener {
         String startTimeInLocalTime = startTimeStr + ":00";
         String endTimeInLocalTime = endTimeStr + ":00";
 
-        /* Check if the event name is empty */
+        // Checks to see if the event name is empty
         if (eventNameStr.isEmpty()) {
           JOptionPane.showMessageDialog(null, "Please check the name of the event\n It should not be empty");
         }
-        /* check if the time inputs are numbers between 0 and 23 */
+        // Checks if the time inputs are numbers between 0 and 23
         else if (startHour < 0 || startHour > 23 || endHour < 0 || endHour > 23) {
           JOptionPane.showMessageDialog(null, "Please check your start or end time\n They should be between 0 and 23");
         }
-        /* check if the start time is greater than the end time */
+        // Checks to see if the start time is greater than the end time
         else if (startHour >= endHour) {
           JOptionPane.showMessageDialog(null, "Start time shoule be greater than end time");
         }
-        /* Valid User Input */
+        // Checks for valid user input */
         else {
           if (startHour < 10)
             startTimeInLocalTime = "0" + startTimeInLocalTime;
@@ -450,12 +451,12 @@ public class View implements ChangeListener {
               LocalTime.parse(startTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME),
               LocalTime.parse(endTimeInLocalTime, DateTimeFormatter.ISO_LOCAL_TIME));
 
-          /* check if time conflicts with another event */
+          // Checks too see if time conflicts with another event
           if (model.isConflicts(newEvent)) {
             JOptionPane.showMessageDialog(null, "Event Time is conflicting! Please try again.");
           }
 
-          /* If Successful, Create Event */
+          // If successful, this creates event
           else {
             model.updateEvent(currentDate, newEvent);
             createFrame.dispose();
@@ -489,7 +490,7 @@ public class View implements ChangeListener {
   }
 
   /**
-   * load recurring events from file
+   * Loads recurring events from file
    */
   private void loadFileHandler() {
     System.out.println("LOAD FILE HANDLER START");
@@ -535,7 +536,7 @@ public class View implements ChangeListener {
   }
 
   /**
-   * highlights current view selection
+   * Highlights current view selection
    */
   private void highlightViewBtn(JButton btn) {
     dayBtn.setBorder(UIManager.getBorder("Button.border"));
@@ -546,7 +547,7 @@ public class View implements ChangeListener {
   }
 
   /**
-   * highlight the given date in the monthly calendar.
+   * Highlights the given date in the monthly calendar
    *
    * @param i
    */
@@ -556,9 +557,8 @@ public class View implements ChangeListener {
   }
 
   /**
-   * January - Jan. / February - Feb. / March - Mar. / April - Apr. / May - May /
-   * June - Jun. / July - Jul. / August - Aug. / September - Sep. / October - Oct.
-   * / November - Nov. / December - Dec.
+   * 
+   * Abbreviation of the month is just the first 3 letters
    * 
    * @param date Local Date
    * @return String of Month Abbreviations
@@ -568,7 +568,7 @@ public class View implements ChangeListener {
   }
 
   /**
-   * This function adds JButton, JLabel Components to the JPanel, monthView and
+   * The following adds JButton, JLabel Components to the JPanel, monthView and
    * shows month view corresponding to the LocalDate in parameter.
    * 
    * @param c LocalDate
@@ -577,8 +577,6 @@ public class View implements ChangeListener {
     int totalDaysOfMonth = c.getMonth().length(c.isLeapYear());
     int offset = 0;
     String firstDayOfMonth = LocalDate.of(c.getYear(), c.getMonth(), 1).getDayOfWeek().name();
-
-    /* offset depends on the first day of the first week */
     if (firstDayOfMonth == "SUNDAY")
       offset = 0;
     else if (firstDayOfMonth == "MONDAY")
@@ -627,17 +625,17 @@ public class View implements ChangeListener {
       dateBtn.setEnabled(false);
       monthlyCalendarPanel.add(dateBtn);
     }
-    /* Add Date Buttons */
+    // Adds date buttons
     for (int i = 1; i <= totalDaysOfMonth; i++) {
       JButton dateBtn = new JButton(Integer.toString(i));
       monthlyCalendarPanel.add(dateBtn);
 
-      /* Date Button Listener */
+      // Date Button Listener
       dateBtn.addActionListener(e -> {
         /* Show content in day view */
         int date = Integer.parseInt(dateBtn.getText());
 
-        /* Update current date */
+        // Updates current date
         currentDate = LocalDate.of(c.getYear(), c.getMonth(), date);
         // currentDateToString(currentDate);
 
@@ -658,7 +656,7 @@ public class View implements ChangeListener {
             break;
         }
 
-        /* Highlight the date */
+        // Highlights the date
         highlightDaysBtn(currentDate, lastHighlighted);
         lastHighlighted = date;
       });
