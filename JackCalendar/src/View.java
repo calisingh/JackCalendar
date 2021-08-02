@@ -505,13 +505,10 @@ public class View implements ChangeListener {
 
     loadBtn.addActionListener(e -> {
       try {
-        System.out.println("LOAD BTN ACTION LISTENER IN");
         /* Load */
         String fileName = "JackCalendar/data/" + fileNameField.getText();
         model.loadAndUpdateEvents(fileName);
         loadFrame.dispose();
-
-        System.out.println("LOAD BTN ACTION LISTENER OUT");
       } catch (FileNotFoundException fnf) {
         JOptionPane.showMessageDialog(null, "The file is not found");
       }
