@@ -1,13 +1,5 @@
 # Summer 2021 Project: Calendar
 
-### Instructor: Dr. Kim
-
-- First, read the project rules.
-- The use of drag and drop function of an IDE is not allowed in this project.
-- Do not use the old java.util.Date and java.util.GregorianCalendar for time manipulation. Use the new features of Date and Time of Java 8 or higher. Study the API of classes in java.time package to learn how to manipulate day, week, and month of the calendar. Here is an example code to learn how to advance a calendar by month, print date in a specified format, and figure out the the week's day for the 1st day of the given month.
-- You can use the existing codes from assignment 1 as long as one of your team members is the author.
-  Calendar
-
 ## Calendar
 
 <img src="JackCalendar/screenshots/example.png" width="750">
