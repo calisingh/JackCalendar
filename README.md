@@ -4,9 +4,7 @@
 
 <img src="JackCalendar/screenshots/example.png" width="750">
 
-In the project, you will design and implement a calendar similar to the google calendar. Carefully examine the functionality of Google Calendar before starting the project. (FYI, a weekly view defaults on Google Calendar while a day view is default on ours.) You will apply the materials from this course to the project. However, for some of the topics, you may have to learn through self-study to complete the project.
-
-An exemplary initial screen of the calendar is shown here. You are allowed to design your calendar's look differently as long as it satisfies the minimum requirements described below. Make a Day view default on the initial screen.
+In the project, we designed and implemented a calendar similar to the Google calendar. A weekly view defaults on Google Calendar while a day view is default on ours.
 
 ## Functional Requirements
 
